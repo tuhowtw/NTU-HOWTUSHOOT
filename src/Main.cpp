@@ -76,13 +76,19 @@ int main()
 	pointTxt.setFont(font);
 	pointTxt.setString("Point: ");
 	pointTxt.setCharacterSize(24);
-	pointTxt.setPosition(window->getSize().x-200,window->getSize().y-200+36);
+	pointTxt.setPosition(window->getSize().x-200,window->getSize().y-200+24);
 
 	Text shieldCountTxt;
 	shieldCountTxt.setFont(font);
 	shieldCountTxt.setCharacterSize(24);
 	shieldCountTxt.setString("Shield Count: ");
-	shieldCountTxt.setPosition(window->getSize().x-200,window->getSize().y-200+72);
+	shieldCountTxt.setPosition(window->getSize().x-200,window->getSize().y-200+48);
+
+	Text superShieldRechargeTimeTxt;
+	superShieldRechargeTimeTxt.setFont(font);
+	superShieldRechargeTimeTxt.setCharacterSize(24);
+	superShieldRechargeTimeTxt.setString("Super Shield Cooldown Time: ");
+	superShieldRechargeTimeTxt.setPosition(window->getSize().x-200,window->getSize().y-200 + 72);
 
 	//audio
 	SoundBuffer b1, b2, b3, b4, b5, b6, b7, b8;
@@ -118,6 +124,7 @@ int main()
 	std::chrono::steady_clock::time_point lastShieldT;
 
 	std::chrono::steady_clock::time_point lastSuperShieldT;
+	std::chrono::seconds superShieldInterval(10);
 
 	std::vector<Bullet> *enemyBulletHolder = new std::vector<Bullet>;
 	int playerPoint = 0;
@@ -336,7 +343,7 @@ int main()
 			}
 
 			if(Keyboard::isKeyPressed(Keyboard::F)){
-				if(std::chrono::steady_clock::now() - lastSuperShieldT > std::chrono::seconds(20)){
+				if(std::chrono::steady_clock::now() - lastSuperShieldT > superShieldInterval){
 					shieldSound.play();
 					player->startShield();
 					lastSuperShieldT = std::chrono::steady_clock::now();
@@ -542,12 +549,11 @@ int main()
 				}
 				else
 					itPS++;
-
 			}
 
 
 
-			//gameover
+			//TEXT
 			lifeCountTxt.setString("Life: "+std::to_string(player->getLife()));
 			lifeCountTxt.setPosition(window->getSize().x-200,window->getSize().y-200);
 
@@ -557,9 +563,17 @@ int main()
 			shieldCountTxt.setString("Shield Count: "+std::to_string(playerShieldCount));
 			shieldCountTxt.setPosition(window->getSize().x-200,window->getSize().y-100);
 
+			int superShieldWaitTime = std::chrono::duration_cast<std::chrono::seconds>(superShieldInterval - (std::chrono::steady_clock::now() - lastSuperShieldT)).count();
+			if(superShieldWaitTime < 0){
+				superShieldRechargeTimeTxt.setString("S-Shield: Ready");
+			}else{
+				superShieldRechargeTimeTxt.setString("Next S-Shield in: " + std::to_string(superShieldWaitTime));
+			}
+
 			window->draw(lifeCountTxt);
 			window->draw(pointTxt);
 			window->draw(shieldCountTxt);
+			window->draw(superShieldRechargeTimeTxt);
 			if(player->isAlive() == false){
 				window->clear();
 				GAMESTATE = GAMEOVER;

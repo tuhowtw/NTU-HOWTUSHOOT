@@ -17,6 +17,8 @@ Enemy::Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *t
 	health = healthIn;
 	explosionTexture = inExplosionTexture;
 	bulletHolder = inBulletHolder;
+	followCnt = 0;
+	chaseWaitTime = 50;
 
 	velocity = window->getSize().x / 800 * 0.3;
 
@@ -108,12 +110,14 @@ void Enemy::update() {
 			destinationXY.x = std::rand() % windowWidth;
 			destinationXY.y = std::rand() % (windowHeight);
 		}else if(mode == 1){
-			destinationXY = player->getXY();
-			followCnt++;
-			if(followCnt >= 5){
-				mode = 0;
-				std::cout << "Stop following\n";
+			if(std::chrono::steady_clock::now() - lastTimeChased > std::chrono::milliseconds(chaseWaitTime)){
+				destinationXY = player->getXY();
 			}
+			// followCnt++;
+			// if(followCnt >= 20){
+			// 	mode = 0;
+			// 	std::cout << "Stop following\n";
+			// }
 		}
 
 		float xd = destinationXY.x - position.x;
@@ -168,7 +172,6 @@ void Enemy::update() {
 		angle = -atan2(x, y) * 180 / PI;
 		enemySprite.setRotation(angle);
 	}
-
 	enemySprite.setPosition(position);
 	window->draw(enemySprite);
 }

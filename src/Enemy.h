@@ -25,6 +25,9 @@ private:
 	bool alive = true;
 	int health;
 	bool active = false;
+	std::chrono::steady_clock::time_point lastTimeChased;
+	int chaseWaitTime;
+
 	std::chrono::steady_clock::time_point lastTimeShot;
 	int shootWaitTime;
 	std::chrono::steady_clock::time_point timeKilled;

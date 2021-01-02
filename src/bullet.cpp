@@ -12,11 +12,10 @@ Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin
 	ySize = sizeY;
 	shooterSprite = shooterSpriteIn;
 	targetXY = targetXYIn;
-
-
+	health = 1;
 
 	shooterXY = shooterSprite->getPosition();
-	movingSpeed = window->getSize().x/800*2;
+	movingSpeed = window->getSize().x / 800 * 2;
 	bulletShape.setSize(sf::Vector2f(xSize,ySize));
 	bulletShape.setOrigin(sizeX/2,sizeY/2);
 	if(color == "white"){
@@ -62,6 +61,7 @@ Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin
 	shooterSprite = shooterSpriteIn;
 	targetXY = targetXYIn;
 	speedUnit = speed;
+	health = 1;
 
 	shooterXY = shooterSprite->getPosition();
 	movingSpeed = window->getSize().x / 800 * speedUnit;
@@ -153,14 +153,18 @@ FloatRect Bullet::getGlobalBounds() {
 
 void Bullet::hitEnemy(){
 	std::cout << "HITTT" << std::endl;
-	broken = true;
+	health--;
+	if(health <= 0){
+		broken = true;
+	}
 }
 
 bool Bullet::isBroken(){
 	return broken;
 }
 
-void Bullet::start(Vector2f targetXYIn, int size_x , int size_y){
+void Bullet::start(Vector2f targetXYIn, int size_x , int size_y, int power){
+	health = power;
 	active = true;
 	targetXY = targetXYIn;
 	bulletShape.setSize(Vector2f(size_x,size_y));

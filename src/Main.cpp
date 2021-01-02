@@ -314,7 +314,7 @@ int main()
 					if(playerBulletPower < 10){
 						playerBulletPower += 1;
 					}
-					playerBulletHolder[playerBulletHolder.size() - 1].setSize(10*playerBulletPower, 10*playerBulletPower);
+					playerBulletHolder[playerBulletHolder.size() - 1].setSize(3 * playerBulletPower, 3 * playerBulletPower);
 				}
 
 				mouseLPressed = true;
@@ -335,7 +335,7 @@ int main()
 					//lastShotTime = std::clock();
 			}
 
-			if(Keyboard::isKeyPressed(Keyboard::Space)){
+			if(Keyboard::isKeyPressed(Keyboard::F)){
 				if(std::chrono::steady_clock::now() - lastSuperShieldT > std::chrono::seconds(20)){
 					shieldSound.play();
 					player->startShield();
@@ -359,7 +359,7 @@ int main()
 					Vector2i iMouseXY = Mouse::getPosition(*window);
 					mouseXY.x = iMouseXY.x;
 					mouseXY.y = iMouseXY.y;
-					playerBulletHolder[playerBulletHolder.size()-1].start(mouseXY,10*playerBulletPower,10*playerBulletPower);
+					playerBulletHolder[playerBulletHolder.size()-1].start(mouseXY, 3 * playerBulletPower, 3 * playerBulletPower, playerBulletPower);
 					shootSound.play();
 
 				}

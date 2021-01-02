@@ -17,14 +17,14 @@ Enemy::Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *t
 	explosionTexture = inExplosionTexture;
 	bulletHolder = inBulletHolder;
 
-	velocity = window->getSize().x/800;
+	velocity = window->getSize().x / 800 * 0.3;
 
 	windowHeight = window->getSize().x;
 	windowWidth = window->getSize().y;
 
 	enemySprite.setTexture(*texture);
 	enemySprite.setOrigin(50,50);
-	enemySprite.setScale(0.30, 0.30);
+	enemySprite.setScale(0.3, 0.3);
 	enemySprite.setPosition(position);
 }
 
@@ -63,7 +63,7 @@ Sprite * Enemy::getSprite() {
 void Enemy::shoot() {
 	Vector2f playerXY = player->getXY();
 	bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.1));
-	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 10, 10);
+	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 3, 3);
 	shootWaitTime = 200 + (std::rand()%20)*50;
 }
 
@@ -131,8 +131,8 @@ void Enemy::update() {
 				moving = false;
 			}else{
 				//move
-				position.x += movingSpeedXY.x;
-				position.y += movingSpeedXY.y;
+				// position.x += movingSpeedXY.x;
+				// position.y += movingSpeedXY.y;
 			}
 
 		}else{

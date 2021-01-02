@@ -17,8 +17,9 @@ private:
 	float xd, yd;
 	float rate;
 	float xMove, yMove;
-	bool haveShotSth = false;
+	bool broken = false;
 	bool active = false;
+	int health;
 
 	int xSize;
 	int ySize;
@@ -34,7 +35,7 @@ public:
 	Vector2f getXY();
 	void update();
 	void hitEnemy();
-	bool hitOrNot();
+	bool isBroken();
 	void setSize(int x, int y);
 	void start(Vector2f targetXYIn, int size_x = 10, int size_y = 10);
 };

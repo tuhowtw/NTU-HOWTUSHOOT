@@ -129,7 +129,7 @@ void Bullet::update() {
 
 
 	bulletShape.setPosition(position);
-	if(!haveShotSth){
+	if(!broken){
 		if(active){
 			window->draw(bulletShape);
 		}else{
@@ -153,11 +153,11 @@ FloatRect Bullet::getGlobalBounds() {
 
 void Bullet::hitEnemy(){
 	std::cout << "HITTT" << std::endl;
-	haveShotSth = true;
+	broken = true;
 }
 
-bool Bullet::hitOrNot(){
-	return haveShotSth;
+bool Bullet::isBroken(){
+	return broken;
 }
 
 void Bullet::start(Vector2f targetXYIn, int size_x , int size_y){

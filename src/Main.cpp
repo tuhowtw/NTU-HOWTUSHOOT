@@ -378,7 +378,7 @@ int main()
 			std::vector<Enemy>::iterator itEnemies = enemyHolder.begin();
 			while (itBullet != playerBulletHolder.end() )
 			{
-				if(itBullet->hitOrNot() == false){
+				if(itBullet->isBroken() == false){
 					itEnemies = enemyHolder.begin();
 					while (itEnemies != enemyHolder.end()) {
 						if (itBullet->getGlobalBounds().intersects(itEnemies->getGlobalBounds())) {
@@ -404,10 +404,10 @@ int main()
 			std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
 			std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
 			while (itB1 != playerBulletHolder.end()){
-				if(itB1->hitOrNot() == false){
+				if(itB1->isBroken() == false){
 					itB2 = enemyBulletHolder->begin();
 					while(itB2 != enemyBulletHolder->end()){
-						if(itB2->hitOrNot() == false){
+						if(itB2->isBroken() == false){
 							if(itB1->getGlobalBounds().intersects(itB2->getGlobalBounds())){
 							std::cout << "Bullet!\n";
 							//itB1->hitEnemy();
@@ -426,7 +426,7 @@ int main()
 			while (itB3 != playerShieldHolder.end()){
 				itB4 = enemyBulletHolder->begin();
 				while(itB4 != enemyBulletHolder->end()){
-					if(itB3->hitOrNot() == false && itB4->hitOrNot()==false){
+					if(itB3->isBroken() == false && itB4->isBroken()==false){
 						if(itB3->getGlobalBounds().intersects(itB4->getGlobalBounds())){
 							std::cout << "Bullet!\n";
 							//itB3->hitEnemy();
@@ -445,7 +445,7 @@ int main()
 			std::vector<Bullet>::iterator itBulletE = enemyBulletHolder->begin();
 			while (itBulletE != enemyBulletHolder->end())
 			{
-				if(itBulletE->hitOrNot() == false){
+				if(itBulletE->isBroken() == false){
 					if(itBulletE->getGlobalBounds().intersects(player->getGlobalBounds())){
 						if(std::chrono::steady_clock::now() - playerLastHitTime > std::chrono::milliseconds(1500)){
 							playerLastHitTime = std::chrono::steady_clock::now();
@@ -465,7 +465,7 @@ int main()
 			itBulletE = enemyBulletHolder->begin();
 			while (itBulletE != enemyBulletHolder->end())
 			{
-				if(itBulletE->hitOrNot() == false){
+				if(itBulletE->isBroken() == false){
 					if(player->isShieldOn() == true && itBulletE->getGlobalBounds().intersects(player->getShieldBounds())){
 						itBulletE->hitEnemy();
 						hitShieldSound.play();

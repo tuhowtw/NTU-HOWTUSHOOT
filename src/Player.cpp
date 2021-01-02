@@ -10,7 +10,7 @@ Player::Player(float startX, float startY, RenderWindow *inWin) {
 	window = inWin;
 	windowWidth = window->getSize().x;
 	windowHeight = window->getSize().y;
-	xVelocity = window->getSize().x/800;
+	xVelocity = window->getSize().x/800 * 0.5;
 	yVelocity = xVelocity;
 
 	defaultPosition = position;

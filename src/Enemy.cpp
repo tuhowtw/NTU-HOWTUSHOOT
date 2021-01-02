@@ -131,8 +131,8 @@ void Enemy::update() {
 				moving = false;
 			}else{
 				//move
-				// position.x += movingSpeedXY.x;
-				// position.y += movingSpeedXY.y;
+				position.x += movingSpeedXY.x;
+				position.y += movingSpeedXY.y;
 			}
 
 		}else{

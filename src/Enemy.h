@@ -6,6 +6,9 @@ using namespace sf;
 
 class Enemy {
 private:
+	int mode; //0 = default, 1 = head, 2 = follower
+	int followCnt;
+
 	Sprite enemySprite;
 	Texture enemyTexture;
 	Texture *explosionTexture;
@@ -31,8 +34,7 @@ private:
 
 
 public:
-	Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *texture, int healthIn, Texture *explosionTexture, std::vector<Bullet> *inBulletHolder);
-	// Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *texture, int healthIn, Texture *explosionTexture, std::vector<Bullet> *inBulletHolder);
+	Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *texture, int healthIn, Texture *explosionTexture, std::vector<Bullet> *inBulletHolder, int mode = 0);
 	FloatRect getGlobalBounds();
 	Sprite * getSprite();
 	Vector2f getXY();

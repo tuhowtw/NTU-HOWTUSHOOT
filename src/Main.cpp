@@ -231,7 +231,7 @@ int main()
 						if(j < 5){
 							enemyXY.x = enemyStartPoint.x + i * enemyInterval;
 							enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-							enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder));
+							enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 1));
 							lastCreatedTime = std::chrono::steady_clock::now();
 							enemySound.play();
 							count++;
@@ -376,7 +376,7 @@ int main()
 			//judge if bullets hit enemies
 			std::vector<Bullet>::iterator itBullet = playerBulletHolder.begin();
 			std::vector<Enemy>::iterator itEnemies = enemyHolder.begin();
-			while (itBullet != playerBulletHolder.end() )
+			while (itBullet != playerBulletHolder.end())
 			{
 				if(itBullet->isBroken() == false){
 					itEnemies = enemyHolder.begin();
@@ -454,8 +454,6 @@ int main()
 							hitSound.play();
 						}
 					}
-
-
 				}
 				itBulletE++;
 
@@ -472,25 +470,7 @@ int main()
 					}
 				}
 				itBulletE++;
-
 			}
-
-			//while (it != playerBulletHolder.end())
-			//{
-			//	while (itEnemies != enemyHolder.end()) {
-			//		if (it->getGlobalBounds().intersects(itEnemies->getGlobalBounds())) {
-			//			//it = playerBulletHolder.erase(it);
-			//			itEnemies = enemyHolder.erase(itEnemies);
-			//		}
-			//		else {
-			//			itEnemies++;
-			//		}
-			//	}
-			//	it++;
-
-			//}
-
-
 
 
 			//update bullets
@@ -551,7 +531,6 @@ int main()
 				}
 				else
 					itBE++;
-
 			}
 
 			std::vector<Bullet>::iterator itPS = playerShieldHolder.begin();

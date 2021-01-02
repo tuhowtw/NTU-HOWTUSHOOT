@@ -9,7 +9,8 @@
 using namespace sf;
 #define PI 3.1415926
 
-Enemy::Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *texture, int healthIn, Texture *inExplosionTexture, std::vector<Bullet> *inBulletHolder) {
+Enemy::Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *texture, int healthIn, Texture *inExplosionTexture, std::vector<Bullet> *inBulletHolder, int mode) {
+	this->mode = mode;
 	position = startXY;
 	window = inWin;
 	player = playerIn;
@@ -91,7 +92,7 @@ void Enemy::update() {
 	}
 
 	//whether to shoot
-	if(!hasShotFirst && active){
+	if((mode == 0) && !hasShotFirst && active){
 		hasShotFirst = true;
 		shoot();
 		lastTimeShot = std::chrono::steady_clock::now();
@@ -103,8 +104,18 @@ void Enemy::update() {
 	//whether to start moving
 	if(moving == false && killed == false && active){
 		moving = true;
-		destinationXY.x = std::rand()%windowWidth;
-		destinationXY.y = std::rand()%(windowHeight);
+		if(mode == 0){
+			destinationXY.x = std::rand() % windowWidth;
+			destinationXY.y = std::rand() % (windowHeight);
+		}else if(mode == 1){
+			destinationXY = player->getXY();
+			followCnt++;
+			if(followCnt >= 5){
+				mode = 0;
+				std::cout << "Stop following\n";
+			}
+		}
+
 		float xd = destinationXY.x - position.x;
 		float yd = destinationXY.y - position.y;
 		float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
@@ -131,35 +142,32 @@ void Enemy::update() {
 				moving = false;
 			}else{
 				//move
-				// position.x += movingSpeedXY.x;
-				// position.y += movingSpeedXY.y;
+				position.x += movingSpeedXY.x;
+				position.y += movingSpeedXY.y;
 			}
 
 		}else{
 			moving = false;
 		}
 	}
-
-
-	////move to a point
-	//if (moving) {
-	//	position.x += xMove;
-	//	position.y += yMove;
-
-	//	if (position.x > toPointX - 2 && position.x < toPointX + 2 && position.y > toPointY - 2 && position.y < toPointY + 2) {
-	//		moving = false;
-	//	}
-	//}
-
-	//face the player
-	float x = playerPosition.x - position.x;
-	float y = playerPosition.y - position.y;
+	//face the player/ destination
+	Vector2f targetXY;
+	if(mode == 0){
+		targetXY = player->getXY();
+	}else{
+		if(!active){
+			targetXY = player->getXY();
+		}else{
+			targetXY = destinationXY;
+		}
+	}
+	float x = targetXY.x - position.x;
+	float y = targetXY.y - position.y;
 
 	if(!killed){
 		angle = -atan2(x, y) * 180 / PI;
 		enemySprite.setRotation(angle);
 	}
-
 
 	enemySprite.setPosition(position);
 	window->draw(enemySprite);

@@ -110,7 +110,18 @@ void Player::update() {
 	shieldSprite.setPosition(position);
 	window->draw(playerSprite);
 	if(shieldOn){
-		if(std::chrono::steady_clock::now() - shieldStartT < std::chrono::seconds(5)){
+		if(std::chrono::steady_clock::now() - shieldStartT < std::chrono::seconds(shieldDuration)){
+			if(std::chrono::steady_clock::now() - shieldLastThinnedT > std::chrono::milliseconds(500)){
+				Color shieldColor = shieldSprite.getColor();
+				std::cout << "COLOR.a:" << shieldColor.a << std::endl;
+				if(shieldColorCnt > 1){
+					shieldColor.a -= 255.0 / (shieldDuration * 2);
+					shieldSprite.setColor(shieldColor);
+					shieldColorCnt--;
+				}
+				shieldLastThinnedT = std::chrono::steady_clock::now();
+			}
+
 			window->draw(shieldSprite);
 		}else{
 			shieldOn = false;
@@ -121,10 +132,16 @@ void Player::update() {
 
 void Player::getHit(int damage){
 	health -= damage;
+	startShield();
 }
 
-void Player::startShield(){
+void Player::startShield(int sec){
+	shieldDuration = sec;
 	shieldOn = true;
+	Color shieldColor = shieldSprite.getColor();
+	shieldColor.a = 255;
+	shieldSprite.setColor(shieldColor);
+	shieldColorCnt = sec * 2;
 	shieldStartT = std::chrono::steady_clock::now();
 }
 

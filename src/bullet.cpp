@@ -153,7 +153,7 @@ FloatRect Bullet::getGlobalBounds() {
 
 void Bullet::hitEnemy(){
 	std::cout << "HITTT" << std::endl;
-	health--;
+	health -= 2;
 	if(health <= 0){
 		broken = true;
 	}

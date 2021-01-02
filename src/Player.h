@@ -16,6 +16,9 @@ private:
 	Vector2f shieldPosition;
 	bool shieldOn = true;
 	std::chrono::steady_clock::time_point shieldStartT;
+	std::chrono::steady_clock::time_point shieldLastThinnedT;
+	int shieldColorCnt;
+	int shieldDuration;
 
 	Texture explosionTexture;
 	Vector2f position;
@@ -49,7 +52,7 @@ public:
 	void moveDown();
 	void moveLeft();
 	void moveRight();
-	void startShield();
+	void startShield(int sec = 5);
 	void update();
 	void shoot();
 	void getHit(int damage);

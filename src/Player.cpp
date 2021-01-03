@@ -113,7 +113,6 @@ void Player::update() {
 		if(std::chrono::steady_clock::now() - shieldStartT < std::chrono::seconds(shieldDuration)){
 			if(std::chrono::steady_clock::now() - shieldLastThinnedT > std::chrono::milliseconds(500)){
 				Color shieldColor = shieldSprite.getColor();
-				std::cout << "COLOR.a:" << shieldColor.a << std::endl;
 				if(shieldColorCnt > 1){
 					shieldColor.a -= 255.0 / (shieldDuration * 2);
 					shieldSprite.setColor(shieldColor);

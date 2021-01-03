@@ -65,9 +65,9 @@ Sprite * Enemy::getSprite() {
 
 void Enemy::shoot() {
 	Vector2f playerXY = player->getXY();
-	bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.1));
+	bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.6));
 	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 3, 3);
-	shootWaitTime = 200 + (std::rand()%20)*50;
+	shootWaitTime = 20 + (std::rand()%20)*50;
 }
 
 void Enemy::getHit(int damage){
@@ -94,37 +94,45 @@ void Enemy::update() {
 	}
 
 	//whether to shoot
-	if((mode == 0) && !hasShotFirst && active){
-		hasShotFirst = true;
-		shoot();
-		lastTimeShot = std::chrono::steady_clock::now();
-	}else if(active && std::chrono::steady_clock::now() - lastTimeShot > std::chrono::milliseconds(shootWaitTime)){
-		shoot();
-		lastTimeShot = std::chrono::steady_clock::now();
+	if(mode != 2){
+		if(active && std::chrono::steady_clock::now() - lastTimeShot > std::chrono::milliseconds(shootWaitTime)){
+			shoot();
+			lastTimeShot = std::chrono::steady_clock::now();
+		}
 	}
 
-	//whether to start moving
+
+	//set target
 	if(moving == false && killed == false && active){
 		moving = true;
 		if(mode == 0){
 			destinationXY.x = std::rand() % windowWidth;
 			destinationXY.y = std::rand() % (windowHeight);
+			float xd = destinationXY.x - position.x;
+			float yd = destinationXY.y - position.y;
+			float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
+			movingSpeedXY.x = xd * rate;
+			movingSpeedXY.y = yd * rate;
 		}else if(mode == 1){
 			if(std::chrono::steady_clock::now() - lastTimeChased > std::chrono::milliseconds(chaseWaitTime)){
 				destinationXY = player->getXY();
+				float xd = destinationXY.x - position.x;
+				float yd = destinationXY.y - position.y;
+				float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
+				movingSpeedXY.x = xd * rate;
+				movingSpeedXY.y = yd * rate;
 			}
-			// followCnt++;
-			// if(followCnt >= 20){
-			// 	mode = 0;
-			// 	std::cout << "Stop following\n";
-			// }
+		}else if(mode == 2){
+			if(!directionSet){
+				directionSet = true;
+				destinationXY = player->getXY();
+				float xd = destinationXY.x - position.x;
+				float yd = destinationXY.y - position.y;
+				float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
+				movingSpeedXY.x = xd * rate;
+				movingSpeedXY.y = yd * rate;
+			}
 		}
-
-		float xd = destinationXY.x - position.x;
-		float yd = destinationXY.y - position.y;
-		float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
-		movingSpeedXY.x = xd * rate;
-		movingSpeedXY.y = yd * rate;
 	}
 
 	if(killed && std::chrono::steady_clock::now() - timeKilled > std::chrono::seconds(1)){
@@ -136,22 +144,45 @@ void Enemy::update() {
 	Vector2f playerPosition;
 	playerPosition = player->getXY();
 	if(moving && !killed){
-		if(position.x != destinationXY.x || position.y != destinationXY.y){
-			float xd = destinationXY.x - position.x;
-			float yd = destinationXY.y - position.y;
-			float distance = pow(pow(xd, 2) + pow(yd, 2), 0.5);
+		if(mode == 0 || mode == 1){
+			if(position.x != destinationXY.x || position.y != destinationXY.y){
+				float xd = destinationXY.x - position.x;
+				float yd = destinationXY.y - position.y;
+				float distance = pow(pow(xd, 2) + pow(yd, 2), 0.5);
 
-			if(distance < velocity){
-				position = destinationXY;
-				moving = false;
+				if(distance < velocity){
+					position = destinationXY;
+					moving = false;
+				}else{
+					//move
+					position.x += movingSpeedXY.x;
+					position.y += movingSpeedXY.y;
+				}
 			}else{
-				//move
-				position.x += movingSpeedXY.x;
-				position.y += movingSpeedXY.y;
+				moving = false;
+			}
+		}else if(mode == 2){
+			//reach the bound and bounce
+			if(position.x < 0 || position.x > window->getSize().x){
+				if(position.x < 0){
+					position.x = 1;
+				}else{
+					position.x = window->getSize().x - 1;
+				}
+				movingSpeedXY.x *= -1;
+			}
+			if(position.y < 0 || position.y > window->getSize().y){
+				if(position.y < 0){
+					position.y = 1;
+				}else{
+					position.y = window->getSize().y - 1;
+				}
+				movingSpeedXY.y *= -1;
 			}
 
-		}else{
-			moving = false;
+			destinationXY.x = position.x + movingSpeedXY.x * 1000;
+			destinationXY.y = position.y + movingSpeedXY.y * 1000;
+			position += movingSpeedXY;
 		}
 	}
 	//face the player/ destination

@@ -27,6 +27,7 @@ private:
 	bool active = false;
 	std::chrono::steady_clock::time_point lastTimeChased;
 	int chaseWaitTime;
+	bool directionSet = false;
 
 	std::chrono::steady_clock::time_point lastTimeShot;
 	int shootWaitTime;

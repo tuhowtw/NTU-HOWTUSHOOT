@@ -64,6 +64,10 @@ int main()
 	ggTxt.setFont(font);
 	ggTxt.setCharacterSize(32);
 
+	Text objectNumTxt;
+	objectNumTxt.setFont(font);
+	objectNumTxt.setCharacterSize(24);
+	objectNumTxt.setPosition(window->getSize().x - 200, window->getSize().y - 300);
 
 	Text lifeCountTxt;
 	lifeCountTxt.setFont(font);
@@ -122,6 +126,10 @@ int main()
 	int playerShieldCount = 10;
 	std::chrono::steady_clock::time_point lastShieldAddedT;
 	std::chrono::steady_clock::time_point lastShieldT;
+	std::chrono::steady_clock::time_point playerLastShootTime;
+	const int CHARGE_MODE = 0, MACHINE_GUN_MODE = 1;
+	int playerShootingMode = CHARGE_MODE;
+	int playerShootInterval = 10;
 
 	std::chrono::steady_clock::time_point lastSuperShieldT;
 	std::chrono::seconds superShieldInterval(10);
@@ -160,6 +168,9 @@ int main()
 
 	//std::chrono::duration<double> elapsed_seconds = enemyCreatedT - std::chrono::steady_clock::now();
 	bool enemyStarted = false;
+	// bool lineCreated = false;
+	// bool lineStarted = false;
+	// Enemy* lineMembers[10];
 	bool created = false;
 	std::chrono::steady_clock::time_point enemyCreatedT;
 
@@ -216,53 +227,35 @@ int main()
 			}
 			if(!created){
 				if(!spawnStart){
-					spawnStart = true;
-					if(i < 5){
-						if(j < 5){
-							enemyXY.x = enemyStartPoint.x + i * enemyInterval;
-							enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-							enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder));
-							enemySound.play();
-							lastCreatedTime = std::chrono::steady_clock::now();
-							count++;
-							j++;
-						}
-						if(j == 5){
-							j = 0;
-							i++;
-						}
-					}
-				}
-				else if(std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(200)){
-					if(i < 5){
-						if(j < 5){
-							enemyXY.x = enemyStartPoint.x + i * enemyInterval;
-							enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-							enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 1));
-							lastCreatedTime = std::chrono::steady_clock::now();
-							enemySound.play();
-							count++;
-							j++;
-						}
-						if(j == 5){
-							j = 0;
-							i++;
+					if(std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(5)){
+						if(i < 10){
+							if(j < 10){
+								enemyXY.x = enemyStartPoint.x + i * enemyInterval;
+								enemyXY.y = enemyStartPoint.y + j * enemyInterval;
+								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
+								lastCreatedTime = std::chrono::steady_clock::now();
+								enemySound.play();
+								count++;
+								j++;
+							}
+							if(j == 10){
+								j = 0;
+								i++;
+							}
 						}
 					}
+					if(count >= 100){
+						created = true;
+						enemyCreatedT = std::chrono::steady_clock::now();
+					}
 				}
-				if(count >= 25){
-					created = true;
-					enemyCreatedT = std::chrono::steady_clock::now();
-				}
-
 			}
-
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(4000+std::rand()%5*1000)){
+			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(400+std::rand()%5*100)){
 				lastCreatedTime = std::chrono::steady_clock::now();
 				Vector2f enemyXY;
 				enemyXY.x = std::rand()%window->getSize().x;
 				enemyXY.y = std::rand()%window->getSize().y;
-				enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder));
+				enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 0));
 				enemyHolder[enemyHolder.size() - 1].startMoving();
 				enemySound.play();
 			}
@@ -274,14 +267,25 @@ int main()
 			//created = false;
 			//wait for 2 sec then enemies move
 			auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - enemyCreatedT);
-			if(elapsed_seconds > std::chrono::seconds(1) && !enemyStarted && created){
+			if(elapsed_seconds > std::chrono::seconds(0) && !enemyStarted && created){
 				enemyStarted = true;
 				std::vector<Enemy>::iterator itStart = enemyHolder.begin();
 				while (itStart != enemyHolder.end()){
 					itStart->startMoving();
 					itStart++;
-					}
+				}
 			}
+
+			// if(enemyStarted && !lineCreated){
+			// 	for(int i = 0; i < 10; i++){
+			// 		enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
+			// 		lineMembers[i] = enemyHolder
+			// 	}
+			// 	lineCreated = true;
+			// }
+
+			// if()
+
 
 
 			//Player moving
@@ -298,33 +302,53 @@ int main()
 				player->moveRight();
 			}
 
+			if(Keyboard::isKeyPressed(Keyboard::Num1)){
+				playerShootingMode = CHARGE_MODE;
+			}
+
+			if(Keyboard::isKeyPressed(Keyboard::Num2)){
+				playerShootingMode = MACHINE_GUN_MODE;
+			}
 
 			//trigger
 			if (Mouse::isButtonPressed(Mouse::Left)) {
+				if(playerShootingMode == CHARGE_MODE){
+					if(!mouseLPressed){
+						bulletPowerT = std::chrono::steady_clock::now();
+						float angle;
+						Vector2f mouseXY;
+						Vector2i iMouseXY = Mouse::getPosition(*window);
+						mouseXY.x = iMouseXY.x;
+						mouseXY.y = iMouseXY.y;
+						Vector2f playerXY_temp = player->getXY();
+						float xd = mouseXY.x - playerXY_temp.x;
+						float yd = mouseXY.y - playerXY_temp.y;
+						angle = -atan2(xd, yd) * 180 / PI;
 
-				if(!mouseLPressed){
-					bulletPowerT = std::chrono::steady_clock::now();
-					float angle;
+						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 3 * playerBulletPower, 3 * playerBulletPower, angle));
+						//lastShotTime = std::clock();
+					}else if(std::chrono::steady_clock::now() - bulletPowerT > std::chrono::milliseconds(100)){
+						bulletPowerT = std::chrono::steady_clock::now();
+						if(playerBulletPower < 10){
+							playerBulletPower += 1;
+						}
+						playerBulletHolder[playerBulletHolder.size() - 1].setSize(3 * playerBulletPower, 3 * playerBulletPower);
+					}
+
+					mouseLPressed = true;
+				}else if(playerShootingMode == MACHINE_GUN_MODE){
 					Vector2f mouseXY;
 					Vector2i iMouseXY = Mouse::getPosition(*window);
 					mouseXY.x = iMouseXY.x;
 					mouseXY.y = iMouseXY.y;
-					Vector2f playerXY_temp = player->getXY();
-					float xd = mouseXY.x - playerXY_temp.x;
-					float yd = mouseXY.y - playerXY_temp.y;
-					angle = -atan2(xd, yd) * 180 / PI;;
-
-					playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 10*playerBulletPower, 10*playerBulletPower, angle));
-					//lastShotTime = std::clock();
-				}else if(std::chrono::steady_clock::now() - bulletPowerT > std::chrono::milliseconds(100)){
-					bulletPowerT = std::chrono::steady_clock::now();
-					if(playerBulletPower < 10){
-						playerBulletPower += 1;
+					if(std::chrono::steady_clock::now() - playerLastShootTime > std::chrono::milliseconds(playerShootInterval)){
+						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 3 * playerBulletPower, 3 * playerBulletPower, -1));
+						playerBulletHolder[playerBulletHolder.size()-1].start(mouseXY, 3 * playerBulletPower, 3 * playerBulletPower, playerBulletPower);
+						playerLastShootTime = std::chrono::steady_clock::now();
 					}
-					playerBulletHolder[playerBulletHolder.size() - 1].setSize(3 * playerBulletPower, 3 * playerBulletPower);
 				}
 
-				mouseLPressed = true;
+
 			}
 			if (Mouse::isButtonPressed(Mouse::Right)) {
 				if(!mouseRPressed){
@@ -395,8 +419,6 @@ int main()
 								itEnemies->getHit(1);
 								hitSound.play();
 							}
-
-							//itEnemies = enemyHolder.erase(itEnemies);
 						}
 						itEnemies++;
 
@@ -408,25 +430,25 @@ int main()
 			}
 
 			//Judge collision betwwen bullets
-			std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
-			std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
-			while (itB1 != playerBulletHolder.end()){
-				if(itB1->isBroken() == false){
-					itB2 = enemyBulletHolder->begin();
-					while(itB2 != enemyBulletHolder->end()){
-						if(itB2->isBroken() == false){
-							if(itB1->getGlobalBounds().intersects(itB2->getGlobalBounds())){
-							std::cout << "Bullet!\n";
-							//itB1->hitEnemy();
-							itB2->hitEnemy();
-							hitSound.play();
-							}
-						}
-						itB2++;
-					}
-				}
-				itB1++;
-			}
+			// std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
+			// std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
+			// while (itB1 != playerBulletHolder.end()){
+			// 	if(itB1->isBroken() == false){
+			// 		itB2 = enemyBulletHolder->begin();
+			// 		while(itB2 != enemyBulletHolder->end()){
+			// 			if(itB2->isBroken() == false){
+			// 				if(itB1->getGlobalBounds().intersects(itB2->getGlobalBounds())){
+			// 				std::cout << "Bullet!\n";
+			// 				//itB1->hitEnemy();
+			// 				itB2->hitEnemy();
+			// 				hitSound.play();
+			// 				}
+			// 			}
+			// 			itB2++;
+			// 		}
+			// 	}
+			// 	itB1++;
+			// }
 
 			std::vector<Bullet>::iterator itB3 = playerShieldHolder.begin();
 			std::vector<Bullet>::iterator itB4 = enemyBulletHolder->begin();
@@ -445,8 +467,6 @@ int main()
 				}
 				itB3++;
 			}
-
-
 
 			//Judge if enemies' bullets hit player
 			std::vector<Bullet>::iterator itBulletE = enemyBulletHolder->begin();
@@ -554,6 +574,10 @@ int main()
 
 
 			//TEXT
+			int objectCnt = 0;
+			objectCnt = 1 + playerBulletHolder.size() + enemyBulletHolder->size() + enemyHolder.size();
+			objectNumTxt.setString("Object Cnt: " + std::to_string(objectCnt));
+
 			lifeCountTxt.setString("Life: "+std::to_string(player->getLife()));
 			lifeCountTxt.setPosition(window->getSize().x-200,window->getSize().y-200);
 
@@ -574,6 +598,7 @@ int main()
 			window->draw(pointTxt);
 			window->draw(shieldCountTxt);
 			window->draw(superShieldRechargeTimeTxt);
+			window->draw(objectNumTxt);
 			if(player->isAlive() == false){
 				window->clear();
 				GAMESTATE = GAMEOVER;

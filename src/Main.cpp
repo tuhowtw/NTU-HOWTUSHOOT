@@ -233,23 +233,23 @@ int main()
 			if(!created){
 				if(!spawnStart){
 					if(std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(5)){
-						if(i < 10){
-							if(j < 10){
+						if(i < 15){
+							if(j < 15){
 								enemyXY.x = enemyStartPoint.x + i * enemyInterval;
 								enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 3));
+								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
 								lastCreatedTime = std::chrono::steady_clock::now();
 								enemySound.play();
 								count++;
 								j++;
 							}
-							if(j == 10){
+							if(j == 15){
 								j = 0;
 								i++;
 							}
 						}
 					}
-					if(count >= 100){
+					if(count >= 225){
 						created = true;
 						enemyCreatedT = std::chrono::steady_clock::now();
 					}
@@ -266,12 +266,12 @@ int main()
 				enemyStarted = true;
 				std::vector<Enemy>::iterator itStart = enemyHolder.begin();
 				while (itStart != enemyHolder.end()){
-					itStart->startMoving();
+					itStart->startMoving(player->getXY());
 					itStart++;
 				}
 			}
 
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(3000 + std::rand()% 6 * 250)){
+			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(10000 + std::rand()% 6 * 250)){
 				lastCreatedTime = std::chrono::steady_clock::now();
 				Vector2f enemyXY, playerXY;
 				enemyXY.x = std::rand()%window->getSize().x;
@@ -510,11 +510,20 @@ int main()
 			}
 
 			std::vector<Enemy>::iterator itEnemy = enemyHolder.begin();
-			while(player->isShieldOn() == false && itEnemy != enemyHolder.end()){
+			while(enemyStarted && player->isShieldOn() == false && itEnemy != enemyHolder.end()){
 				if(itEnemy->getGlobalBounds().intersects(player->getGlobalBounds())){
 					itEnemy->getHit(1);
 					player->getHit(1);
 					hitSound.play();
+				}
+				itEnemy++;
+			}
+
+			itEnemy = enemyHolder.begin();
+			while(enemyStarted && player->isShieldOn() && itEnemy != enemyHolder.end()){
+				if(itEnemy->getGlobalBounds().intersects(player->getShieldBounds())){
+					if(itEnemy->isKilled() == false) hitSound.play();
+					itEnemy->getHit(1);
 				}
 				itEnemy++;
 			}
@@ -531,14 +540,7 @@ int main()
 				itBulletE++;
 			}
 
-			itEnemy = enemyHolder.begin();
-			while(player->isShieldOn() && itEnemy != enemyHolder.end()){
-				if(itEnemy->getGlobalBounds().intersects(player->getShieldBounds())){
-					if(itEnemy->isKilled() == false) hitSound.play();
-					itEnemy->getHit(1);
-				}
-				itEnemy++;
-			}
+
 
 
 			//update bullets

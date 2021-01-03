@@ -13,7 +13,7 @@ private:
 	Sprite *shooterSprite;
 	RenderWindow *window;
 	RectangleShape bulletShape;
-	float movingSpeed = 2, speedUnit = 2;
+	float movingSpeed = 2, speedUnit = 1;
 	float xd, yd;
 	float rate;
 	float xMove, yMove;

@@ -46,13 +46,13 @@ public:
 	bool inBound();
 	bool isAlive();
 	int getLife();
-	bool isShieldOn();
 
 	void moveUp();
 	void moveDown();
 	void moveLeft();
 	void moveRight();
 	void startShield(int sec = 5);
+	bool isShieldOn();
 	void update();
 	void shoot();
 	void getHit(int damage);

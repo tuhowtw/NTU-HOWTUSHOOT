@@ -190,7 +190,12 @@ int main()
 	enemyStartPoint.y = window->getSize().y/2-2*enemyInterval;
 	std::vector<Enemy> enemyHolder;
 	std::chrono::steady_clock::time_point lastSpawnT;
-
+/*
+	bool lineStarting = false;
+	Vector2f lineTargetXY;
+	Enemy* lineMembers[10]; */
+	// int lineMemberStartLatency = 0;
+	std::chrono::steady_clock::time_point lastLineStartT;
 
 	while (window->isOpen())
 	{
@@ -232,7 +237,7 @@ int main()
 							if(j < 10){
 								enemyXY.x = enemyStartPoint.x + i * enemyInterval;
 								enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
+								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 3));
 								lastCreatedTime = std::chrono::steady_clock::now();
 								enemySound.play();
 								count++;
@@ -250,16 +255,6 @@ int main()
 					}
 				}
 			}
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(400+std::rand()%5*100)){
-				lastCreatedTime = std::chrono::steady_clock::now();
-				Vector2f enemyXY;
-				enemyXY.x = std::rand()%window->getSize().x;
-				enemyXY.y = std::rand()%window->getSize().y;
-				enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 0));
-				enemyHolder[enemyHolder.size() - 1].startMoving();
-				enemySound.play();
-			}
-
 
 			if(!enemyWork){
 				created = false;
@@ -275,6 +270,35 @@ int main()
 					itStart++;
 				}
 			}
+
+			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(3000 + std::rand()% 6 * 250)){
+				lastCreatedTime = std::chrono::steady_clock::now();
+				Vector2f enemyXY, playerXY;
+				enemyXY.x = std::rand()%window->getSize().x;
+				enemyXY.y = std::rand()%window->getSize().y;
+				playerXY = player->getXY();
+				int startLatency = 0;
+				for(int i = 0; i < 10; i++){
+					startLatency += 150;
+					enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
+					enemyHolder[enemyHolder.size() - 1].startAfterMiliSec(startLatency, playerXY);
+					// lineMembers[i] = &enemyHolder[enemyHolder.size() - 1];
+				}
+				enemySound.play();
+			}
+
+			/* if(lineStarting){
+				if(std::chrono::steady_clock::now() - lastLineStartT > std::chrono::milliseconds(150)){
+					if(lineMemeberIndex < 10){
+						//start member
+						lineMembers[lineMemeberIndex++]->startMoving(lineTargetXY);
+						lastLineStartT = std::chrono::steady_clock::now();
+					}else{
+						lineStarting = false;
+					}
+				}
+			} */
+
 
 			// if(enemyStarted && !lineCreated){
 			// 	for(int i = 0; i < 10; i++){
@@ -457,7 +481,7 @@ int main()
 				while(itB4 != enemyBulletHolder->end()){
 					if(itB3->isBroken() == false && itB4->isBroken()==false){
 						if(itB3->getGlobalBounds().intersects(itB4->getGlobalBounds())){
-							std::cout << "Bullet!\n";
+							// std::cout << "Bullet!\n";
 							//itB3->hitEnemy();
 							itB4->hitEnemy();
 						}
@@ -483,13 +507,21 @@ int main()
 					}
 				}
 				itBulletE++;
+			}
 
+			std::vector<Enemy>::iterator itEnemy = enemyHolder.begin();
+			while(player->isShieldOn() == false && itEnemy != enemyHolder.end()){
+				if(itEnemy->getGlobalBounds().intersects(player->getGlobalBounds())){
+					itEnemy->getHit(1);
+					player->getHit(1);
+					hitSound.play();
+				}
+				itEnemy++;
 			}
 
 			//hit Shield
 			itBulletE = enemyBulletHolder->begin();
-			while (itBulletE != enemyBulletHolder->end())
-			{
+			while (itBulletE != enemyBulletHolder->end()){
 				if(itBulletE->isBroken() == false){
 					if(player->isShieldOn() == true && itBulletE->getGlobalBounds().intersects(player->getShieldBounds())){
 						itBulletE->hitEnemy();
@@ -497,6 +529,15 @@ int main()
 					}
 				}
 				itBulletE++;
+			}
+
+			itEnemy = enemyHolder.begin();
+			while(player->isShieldOn() && itEnemy != enemyHolder.end()){
+				if(itEnemy->getGlobalBounds().intersects(player->getShieldBounds())){
+					if(itEnemy->isKilled() == false) hitSound.play();
+					itEnemy->getHit(1);
+				}
+				itEnemy++;
 			}
 
 
@@ -518,7 +559,7 @@ int main()
 			while (it2 != enemyHolder.end()){
 				if (!it2->isAlive()) {
 					it2 = enemyHolder.erase(it2);
-					std::cout << "erased." << std::endl;
+					// std::cout << "erased." << std::endl;
 				}
 				else{
 					it2->update();

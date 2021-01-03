@@ -19,20 +19,48 @@ Enemy::Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *t
 	bulletHolder = inBulletHolder;
 	followCnt = 0;
 	chaseWaitTime = 50;
+	toStartAfter = false;
+	createdTime = std::chrono::steady_clock::now();
 
 	velocity = window->getSize().x / 800 * 0.3;
 
 	windowHeight = window->getSize().x;
 	windowWidth = window->getSize().y;
 
+	Color cTemp = enemySprite.getColor();
+
+	if(mode == 2){
+		cTemp.g = 255;
+	}else{
+		cTemp.r += 255;
+	}
+	enemySprite.setColor(cTemp);
+
 	enemySprite.setTexture(*texture);
 	enemySprite.setOrigin(50,50);
 	enemySprite.setScale(0.3, 0.3);
 	enemySprite.setPosition(position);
+
+}
+
+void Enemy::startAfterMiliSec(int milisec, Vector2f playerXY){
+	startWaitTime = milisec;
+	toStartAfter = true;
+	bounceTargetXY = playerXY;
 }
 
 void Enemy::startMoving(){
 	active = true;
+}
+
+void Enemy::startMoving(Vector2f destXY){
+	active = true;
+	destinationXY = destXY;
+	float xd = destinationXY.x - position.x;
+	float yd = destinationXY.y - position.y;
+	float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
+	movingSpeedXY.x = xd * rate;
+	movingSpeedXY.y = yd * rate;
 }
 
 FloatRect Enemy::getGlobalBounds() {
@@ -67,7 +95,7 @@ void Enemy::shoot() {
 	Vector2f playerXY = player->getXY();
 	bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.6));
 	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 3, 3);
-	shootWaitTime = 20 + (std::rand()%20)*50;
+	shootWaitTime = 500 /* + (std::rand()%20)*500 */;
 }
 
 void Enemy::getHit(int damage){
@@ -83,7 +111,13 @@ bool Enemy::isKilled(){
 }
 
 void Enemy::update() {
-	//killed = true;
+	//whether to start after sec
+	if(!active && toStartAfter){
+		if(std::chrono::steady_clock::now() - createdTime > std::chrono::milliseconds(startWaitTime)){
+			startMoving(bounceTargetXY);
+		}
+	}
+
 	//check if alive
 	if(health <= 0 && !killed){
 		killed = true;
@@ -122,22 +156,12 @@ void Enemy::update() {
 				movingSpeedXY.x = xd * rate;
 				movingSpeedXY.y = yd * rate;
 			}
-		}else if(mode == 2){
-			if(!directionSet){
-				directionSet = true;
-				destinationXY = player->getXY();
-				float xd = destinationXY.x - position.x;
-				float yd = destinationXY.y - position.y;
-				float rate = velocity / pow(pow(xd, 2) + pow(yd, 2), 0.5);
-				movingSpeedXY.x = xd * rate;
-				movingSpeedXY.y = yd * rate;
-			}
 		}
 	}
 
 	if(killed && std::chrono::steady_clock::now() - timeKilled > std::chrono::seconds(1)){
 		alive = false;
-		std::cout << "dead" <<  std::endl;
+		// std::cout << "dead" <<  std::endl;
 	}
 
 	float angle;
@@ -187,7 +211,7 @@ void Enemy::update() {
 	}
 	//face the player/ destination
 	Vector2f targetXY;
-	if(mode == 0){
+	if(mode == 0 || mode == 3){
 		targetXY = player->getXY();
 	}else{
 		if(!active){

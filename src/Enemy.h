@@ -27,7 +27,7 @@ private:
 	bool active = false;
 	std::chrono::steady_clock::time_point lastTimeChased;
 	int chaseWaitTime;
-	bool directionSet = false;
+
 
 	std::chrono::steady_clock::time_point lastTimeShot;
 	int shootWaitTime;
@@ -35,6 +35,10 @@ private:
 	bool hasShotFirst = false;
 	std::vector<Bullet> *bulletHolder;
 
+	bool toStartAfter;
+	std::chrono::steady_clock::time_point createdTime;
+	int startWaitTime;
+	Vector2f bounceTargetXY;
 
 
 public:
@@ -45,7 +49,9 @@ public:
 
 	//void moveToPoint();
 	void update();
+	void startAfterMiliSec(int milisec, Vector2f playerXY);
 	void startMoving();
+	void startMoving(Vector2f destXY);
 	void shoot();
 	void getHit(int damage);
 	bool isAlive();

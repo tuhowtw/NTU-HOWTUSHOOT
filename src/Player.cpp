@@ -134,6 +134,7 @@ void Player::getHit(int damage){
 	startShield();
 }
 
+
 void Player::startShield(int sec){
 	shieldDuration = sec;
 	shieldOn = true;

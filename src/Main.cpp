@@ -271,14 +271,14 @@ int main()
 				}
 			}
 
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(10000 + std::rand()% 6 * 250)){
+			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(1000 + std::rand()% 6 * 250)){
 				lastCreatedTime = std::chrono::steady_clock::now();
 				Vector2f enemyXY, playerXY;
 				enemyXY.x = std::rand()%window->getSize().x;
 				enemyXY.y = std::rand()%window->getSize().y;
 				playerXY = player->getXY();
 				int startLatency = 0;
-				for(int i = 0; i < 10; i++){
+				for(int i = 0; i < 20; i++){
 					startLatency += 150;
 					enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
 					enemyHolder[enemyHolder.size() - 1].startAfterMiliSec(startLatency, playerXY);

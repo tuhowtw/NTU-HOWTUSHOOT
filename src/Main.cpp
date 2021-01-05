@@ -271,7 +271,7 @@ int main()
 				}
 			}
 
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(1000 + std::rand()% 6 * 250)){
+			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(5000 + std::rand()% 6 * 250)){
 				lastCreatedTime = std::chrono::steady_clock::now();
 				Vector2f enemyXY, playerXY;
 				enemyXY.x = std::rand()%window->getSize().x;

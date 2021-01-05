@@ -14,6 +14,8 @@ private:
 	Sprite shieldSprite;
 	Texture shieldTexture;
 	Vector2f shieldPosition;
+
+
 	bool shieldOn = true;
 	std::chrono::steady_clock::time_point shieldStartT;
 	std::chrono::steady_clock::time_point shieldLastThinnedT;

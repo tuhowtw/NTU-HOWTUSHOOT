@@ -28,7 +28,6 @@ Player::Player(float startX, float startY, RenderWindow *inWin) {
 	shieldSprite.setOrigin(50,50);
 	shieldSprite.setScale(1, 1);
 	shieldSprite.setPosition(position);
-
 }
 
 FloatRect Player::getGlobalBounds() {

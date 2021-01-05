@@ -1,10 +1,10 @@
-#include "EnemyQuadtree.h"
+#include "BulletQuadtree.h"
 #include <iostream>
 #include <sstream>
 
 using namespace std;
 
-EnemyQuadtree::EnemyQuadtree(float _x, float _y, float _width, float _height, int _level, int _maxLevel) :
+BulletQuadtree::BulletQuadtree(float _x, float _y, float _width, float _height, int _level, int _maxLevel) :
 	x		(_x),
 	y		(_y),
 	width	(_width),
@@ -19,13 +19,13 @@ EnemyQuadtree::EnemyQuadtree(float _x, float _y, float _width, float _height, in
 		return;
 	}
 
-	NW = new EnemyQuadtree(x, y, width / 2.0f, height / 2.0f, level+1, maxLevel);
-	NE = new EnemyQuadtree(x + width / 2.0f, y, width / 2.0f, height / 2.0f, level+1, maxLevel);
-	SW = new EnemyQuadtree(x, y + height / 2.0f, width / 2.0f, height / 2.0f, level+1, maxLevel);
-	SE = new EnemyQuadtree(x + width / 2.0f, y + height / 2.0f, width / 2.0f, height / 2.0f, level+1, maxLevel);
+	NW = new BulletQuadtree(x, y, width / 2.0f, height / 2.0f, level+1, maxLevel);
+	NE = new BulletQuadtree(x + width / 2.0f, y, width / 2.0f, height / 2.0f, level+1, maxLevel);
+	SW = new BulletQuadtree(x, y + height / 2.0f, width / 2.0f, height / 2.0f, level+1, maxLevel);
+	SE = new BulletQuadtree(x + width / 2.0f, y + height / 2.0f, width / 2.0f, height / 2.0f, level+1, maxLevel);
 }
 
-EnemyQuadtree::~EnemyQuadtree()
+BulletQuadtree::~BulletQuadtree()
 {
 	if (level == maxLevel)
 		return;
@@ -36,7 +36,7 @@ EnemyQuadtree::~EnemyQuadtree()
 	delete SE;
 }
 
-void EnemyQuadtree::AddObject(Enemy * object){
+void BulletQuadtree::AddObject(Bullet * object){
 	if (level == maxLevel) {
 		objects.push_back(object);
 		return;
@@ -55,12 +55,12 @@ void EnemyQuadtree::AddObject(Enemy * object){
 	}
 }
 
-vector<Enemy *> EnemyQuadtree::GetObjectsAt(float _x, float _y){
+vector<Bullet *> BulletQuadtree::GetObjectsAt(float _x, float _y){
 	if (level == maxLevel) {
 		return objects;
 	}
 
-	vector<Enemy *> returnObjects, childReturnObjects;
+	vector<Bullet *> returnObjects, childReturnObjects;
 	if (!objects.empty()) {
 		returnObjects = objects;
 	}
@@ -88,15 +88,15 @@ vector<Enemy *> EnemyQuadtree::GetObjectsAt(float _x, float _y){
 	return returnObjects;
 }
 
-bool EnemyQuadtree::contains(EnemyQuadtree * child, Enemy *object) {
+bool BulletQuadtree::contains(BulletQuadtree * child ,Bullet *object) {
 	return child->getGlobalBounds().intersects(object->getGlobalBounds());
 }
 
-FloatRect EnemyQuadtree::getGlobalBounds(){
+FloatRect BulletQuadtree::getGlobalBounds(){
 	return shape.getGlobalBounds();
 }
 
-void EnemyQuadtree::clear() {
+void BulletQuadtree::clear() {
 	if (level == maxLevel) {
 		objects.clear();
 		return;

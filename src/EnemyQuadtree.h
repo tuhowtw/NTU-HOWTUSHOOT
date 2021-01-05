@@ -14,6 +14,7 @@ public:
 	~EnemyQuadtree();
 	void AddObject(Enemy *object);
 	vector<Enemy *> GetObjectsAt(float x, float y);
+	void clear();
 private:
 	float x;
 	float y;

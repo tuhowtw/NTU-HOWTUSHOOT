@@ -2,6 +2,8 @@
 //
 
 #include <SFML/Graphics.hpp>
+#include "EnemyQuadtree.h"
+#include "BulletQuadtree.h"
 #include "Main.hpp"
 #include "Player.h"
 #include "bullet.h"
@@ -30,6 +32,8 @@ int main()
 
 	int windowWidth = 1920;
 	int windowHeight = 1080;
+
+	BulletQuadtree bulletQuadtree(0, 0, windowWidth, windowHeight, 0, 3);
 
 	Vector2f windowSize;
 	windowSize.x = windowWidth;
@@ -237,7 +241,7 @@ int main()
 							if(j < 15){
 								enemyXY.x = enemyStartPoint.x + i * enemyInterval;
 								enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
+								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 3));
 								lastCreatedTime = std::chrono::steady_clock::now();
 								enemySound.play();
 								count++;
@@ -427,6 +431,9 @@ int main()
 			}
 
 
+			for(int i = 0; i < static_cast<int>(enemyBulletHolder->size()); i++){
+				bulletQuadtree.AddObject(&(*enemyBulletHolder)[i]);
+			}
 
 			//judge if bullets hit enemies
 			std::vector<Bullet>::iterator itBullet = playerBulletHolder.begin();
@@ -454,25 +461,35 @@ int main()
 			}
 
 			//Judge collision betwwen bullets
-			// std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
-			// std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
-			// while (itB1 != playerBulletHolder.end()){
-			// 	if(itB1->isBroken() == false){
-			// 		itB2 = enemyBulletHolder->begin();
-			// 		while(itB2 != enemyBulletHolder->end()){
-			// 			if(itB2->isBroken() == false){
-			// 				if(itB1->getGlobalBounds().intersects(itB2->getGlobalBounds())){
-			// 				std::cout << "Bullet!\n";
-			// 				//itB1->hitEnemy();
-			// 				itB2->hitEnemy();
-			// 				hitSound.play();
-			// 				}
-			// 			}
-			// 			itB2++;
-			// 		}
-			// 	}
-			// 	itB1++;
-			// }
+			/* for(int i = 0; i < static_cast<int>(playerBulletHolder.size()); ++i){
+				Vector2f _xy = playerBulletHolder[i].getXY();
+				vector<Bullet *> returnObjs = bulletQuadtree.GetObjectsAt(_xy.x, _xy.y);
+				for(int j = 0; j < static_cast<int>(returnObjs.size()); ++j){
+					if(playerBulletHolder[i].getGlobalBounds().intersects(returnObjs[j]->getGlobalBounds())){
+						returnObjs[j]->hitEnemy();
+						hitSound.play();
+					}
+				}
+			} */
+			/* std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
+			std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
+			while (itB1 != playerBulletHolder.end()){
+				if(itB1->isBroken() == false){
+					itB2 = enemyBulletHolder->begin();
+					while(itB2 != enemyBulletHolder->end()){
+						if(itB2->isBroken() == false){
+							if(itB1->getGlobalBounds().intersects(itB2->getGlobalBounds())){
+							std::cout << "Bullet!\n";
+							//itB1->hitEnemy();
+							itB2->hitEnemy();
+							hitSound.play();
+							}
+						}
+						itB2++;
+					}
+				}
+				itB1++;
+			} */
 
 			std::vector<Bullet>::iterator itB3 = playerShieldHolder.begin();
 			std::vector<Bullet>::iterator itB4 = enemyBulletHolder->begin();
@@ -577,6 +594,8 @@ int main()
 			if(playerWork){
 				player->update();
 			}
+
+			bulletQuadtree.clear();
 
 
 			//Bullet out of bound logic

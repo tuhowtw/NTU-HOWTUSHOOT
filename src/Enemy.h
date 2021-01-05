@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Player.h"
+#include "bullet.h"
 #include <ctime>
 using namespace sf;
 

@@ -39,6 +39,7 @@ private:
 	bool toStartAfter;
 	std::chrono::steady_clock::time_point createdTime;
 	int startWaitTime;
+	bool toShow;
 	Vector2f bounceTargetXY;
 
 

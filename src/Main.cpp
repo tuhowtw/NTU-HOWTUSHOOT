@@ -33,7 +33,8 @@ int main()
 	int windowWidth = 1920;
 	int windowHeight = 1080;
 
-	BulletQuadtree bulletQuadtree(0, 0, windowWidth, windowHeight, 0, 3);
+	BulletQuadtree enemyBulletTree(0, 0, windowWidth, windowHeight, 0, 5);
+	BulletQuadtree playerBulletTree(0, 0, windowWidth, windowHeight, 0, 5);
 
 	Vector2f windowSize;
 	windowSize.x = windowWidth;
@@ -291,28 +292,7 @@ int main()
 				enemySound.play();
 			}
 
-			/* if(lineStarting){
-				if(std::chrono::steady_clock::now() - lastLineStartT > std::chrono::milliseconds(150)){
-					if(lineMemeberIndex < 10){
-						//start member
-						lineMembers[lineMemeberIndex++]->startMoving(lineTargetXY);
-						lastLineStartT = std::chrono::steady_clock::now();
-					}else{
-						lineStarting = false;
-					}
-				}
-			} */
 
-
-			// if(enemyStarted && !lineCreated){
-			// 	for(int i = 0; i < 10; i++){
-			// 		enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
-			// 		lineMembers[i] = enemyHolder
-			// 	}
-			// 	lineCreated = true;
-			// }
-
-			// if()
 
 
 
@@ -432,10 +412,30 @@ int main()
 
 
 			for(int i = 0; i < static_cast<int>(enemyBulletHolder->size()); i++){
-				bulletQuadtree.AddObject(&(*enemyBulletHolder)[i]);
+				enemyBulletTree.AddObject(&(*enemyBulletHolder)[i]);
 			}
 
+			for(int i = 0; i < static_cast<int>(playerBulletHolder.size()); i++){
+				playerBulletTree.AddObject(&playerBulletHolder[i]);
+			}
+
+
 			//judge if bullets hit enemies
+			/* for(int i = 0; i < static_cast<int>(enemyHolder.size()); i++){
+				if(enemyHolder[i].isKilled() || !created) continue;
+				Vector2f _xy = enemyHolder[i].getXY();
+				vector<Bullet *> returnObjs = playerBulletTree.GetObjectsAt(_xy.x, _xy.y);
+				// cout << "Size:" << returnObjs.size() << endl;
+				for(int j = 0; j < static_cast<int>(returnObjs.size()); j++){
+					if(returnObjs[j]->isBroken()) continue;
+					if(returnObjs[j]->getGlobalBounds().intersects(enemyHolder[i].getGlobalBounds())){
+						returnObjs[j]->hitEnemy();
+						playerPoint++;
+						enemyHolder[i].getHit(1);
+						hitSound.play();
+					}
+				}
+			} */
 			std::vector<Bullet>::iterator itBullet = playerBulletHolder.begin();
 			std::vector<Enemy>::iterator itEnemies = enemyHolder.begin();
 			while (itBullet != playerBulletHolder.end())
@@ -460,17 +460,19 @@ int main()
 
 			}
 
-			//Judge collision betwwen bullets
-			/* for(int i = 0; i < static_cast<int>(playerBulletHolder.size()); ++i){
+
+
+			//Judge collision between bullets
+			for(int i = 0; i < static_cast<int>(playerBulletHolder.size()); ++i){
 				Vector2f _xy = playerBulletHolder[i].getXY();
-				vector<Bullet *> returnObjs = bulletQuadtree.GetObjectsAt(_xy.x, _xy.y);
+				vector<Bullet *> returnObjs = enemyBulletTree.GetObjectsAt(_xy.x, _xy.y);
 				for(int j = 0; j < static_cast<int>(returnObjs.size()); ++j){
 					if(playerBulletHolder[i].getGlobalBounds().intersects(returnObjs[j]->getGlobalBounds())){
 						returnObjs[j]->hitEnemy();
 						hitSound.play();
 					}
 				}
-			} */
+			}
 			/* std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
 			std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
 			while (itB1 != playerBulletHolder.end()){
@@ -479,7 +481,7 @@ int main()
 					while(itB2 != enemyBulletHolder->end()){
 						if(itB2->isBroken() == false){
 							if(itB1->getGlobalBounds().intersects(itB2->getGlobalBounds())){
-							std::cout << "Bullet!\n";
+							// std::cout << "Bullet!\n";
 							//itB1->hitEnemy();
 							itB2->hitEnemy();
 							hitSound.play();
@@ -495,23 +497,33 @@ int main()
 			std::vector<Bullet>::iterator itB4 = enemyBulletHolder->begin();
 			while (itB3 != playerShieldHolder.end()){
 				itB4 = enemyBulletHolder->begin();
-				while(itB4 != enemyBulletHolder->end()){
-					if(itB3->isBroken() == false && itB4->isBroken()==false){
-						if(itB3->getGlobalBounds().intersects(itB4->getGlobalBounds())){
-							// std::cout << "Bullet!\n";
-							//itB3->hitEnemy();
-							itB4->hitEnemy();
-						}
+				Vector2f _xy = itB3->getXY();
+				vector<Bullet *> returnObjs = enemyBulletTree.GetObjectsAt(_xy.x, _xy.y);
+				for(int i = 0; i < static_cast<int>(returnObjs.size()); i++){
+					if(itB4->getGlobalBounds().intersects(returnObjs[i]->getGlobalBounds())){
+						returnObjs[i]->hitEnemy();
 
 					}
-					itB4++;
 				}
 				itB3++;
 			}
 
 			//Judge if enemies' bullets hit player
-			std::vector<Bullet>::iterator itBulletE = enemyBulletHolder->begin();
-			while (itBulletE != enemyBulletHolder->end())
+			// std::vector<Bullet>::iterator itBulletE = enemyBulletHolder->begin();
+			vector<Bullet *> returnObjs2 = enemyBulletTree.GetObjectsAt(player->getXY().x, player->getXY().y);
+			for(int i = 0; i < static_cast<int>(returnObjs2.size()); i++){
+				if(returnObjs2[i]->isBroken() == false){
+					if(returnObjs2[i]->getGlobalBounds().intersects(player->getGlobalBounds())){
+						if(std::chrono::steady_clock::now() - playerLastHitTime > std::chrono::milliseconds(1500)){
+							playerLastHitTime = std::chrono::steady_clock::now();
+							returnObjs2[i]->hitEnemy();
+							player->getHit(1);
+							hitSound.play();
+						}
+					}
+				}
+			}
+			/* while (itBulletE != enemyBulletHolder->end())
 			{
 				if(itBulletE->isBroken() == false){
 					if(itBulletE->getGlobalBounds().intersects(player->getGlobalBounds())){
@@ -524,7 +536,7 @@ int main()
 					}
 				}
 				itBulletE++;
-			}
+			} */
 
 			std::vector<Enemy>::iterator itEnemy = enemyHolder.begin();
 			while(enemyStarted && player->isShieldOn() == false && itEnemy != enemyHolder.end()){
@@ -546,31 +558,33 @@ int main()
 			}
 
 			//hit Shield
-			itBulletE = enemyBulletHolder->begin();
-			while (itBulletE != enemyBulletHolder->end()){
-				if(itBulletE->isBroken() == false){
-					if(player->isShieldOn() == true && itBulletE->getGlobalBounds().intersects(player->getShieldBounds())){
-						itBulletE->hitEnemy();
+
+			Vector2f _xy = player->getXY();
+			vector<Bullet *> returnObjs = enemyBulletTree.GetObjectsAt(_xy.x, _xy.y);
+			for(int i = 0; i < static_cast<int>(returnObjs.size()); i++){
+				if(returnObjs[i]->isBroken() == false){
+					if(player->isShieldOn() == true && returnObjs[i]->getGlobalBounds().intersects(player->getShieldBounds())){
+						returnObjs[i]->hitEnemy();
 						hitShieldSound.play();
 					}
 				}
-				itBulletE++;
 			}
 
 
 
 
 			//update bullets
+			VertexArray bulletVertices(Quads);
 			for (std::vector<Bullet>::iterator it = playerBulletHolder.begin(); it < playerBulletHolder.end(); it++){
-				it->update();
+				it->update(bulletVertices);
 			}
 
 			for (std::vector<Bullet>::iterator it = enemyBulletHolder->begin(); it < enemyBulletHolder->end(); it++){
-				it->update();
+				it->update(bulletVertices);
 			}
 
 			for (std::vector<Bullet>::iterator it = playerShieldHolder.begin(); it < playerShieldHolder.end(); it++){
-				it->update();
+				it->update(bulletVertices);
 			}
 
 			//update enemies
@@ -595,7 +609,7 @@ int main()
 				player->update();
 			}
 
-			bulletQuadtree.clear();
+			enemyBulletTree.clear();
 
 
 			//Bullet out of bound logic
@@ -606,9 +620,9 @@ int main()
 				bPosition = itB->getXY();
 				if (bPosition.x < 0 || bPosition.x > window->getSize().x || bPosition.y < 0 || bPosition.y > window->getSize().y) {
 					itB = playerBulletHolder.erase(itB);
-				}
-				else
+				}else{
 					itB++;
+				}
 			}
 
 			std::vector<Bullet>::iterator itBE = enemyBulletHolder->begin();
@@ -617,9 +631,9 @@ int main()
 				bPosition = itBE->getXY();
 				if (bPosition.x < 0 || bPosition.x > window->getSize().x || bPosition.y < 0 || bPosition.y > window->getSize().y) {
 					itBE = enemyBulletHolder->erase(itBE);
-				}
-				else
+				}else{
 					itBE++;
+				}
 			}
 
 			std::vector<Bullet>::iterator itPS = playerShieldHolder.begin();
@@ -656,6 +670,27 @@ int main()
 				superShieldRechargeTimeTxt.setString("Next S-Shield in: " + std::to_string(superShieldWaitTime));
 			}
 
+/* 			VertexArray quad(Quads, 4);
+			quad[0].position = Vector2f(500,500);
+			quad[0].color = Color::White;
+			quad[1].position = Vector2f(600,500);
+			quad[1].color = Color::White;
+			quad[2].position = Vector2f(600,600);
+			quad[2].color = Color::White;
+			quad[3].position = Vector2f(500,600);
+			quad[3].color = Color::White;
+			window->draw(quad);
+			RectangleShape spe;
+			spe.setSize(Vector2f(100, 100));
+			spe.setOrigin(50,50);
+			spe.setFillColor(Color::White);
+			spe.setPosition(500,500);
+			window->draw(spe);
+ */
+
+
+			window->draw(bulletVertices);
+			bulletVertices.clear();
 			window->draw(lifeCountTxt);
 			window->draw(pointTxt);
 			window->draw(shieldCountTxt);

@@ -19,12 +19,14 @@ Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin
 	bulletShape.setSize(sf::Vector2f(xSize,ySize));
 	bulletShape.setOrigin(sizeX/2,sizeY/2);
 	if(color == "white"){
-		bulletShape.setFillColor(Color::White);
+		bulletColor = Color::White;
 	}else if(color == "red"){
-		bulletShape.setFillColor(Color::Red);
+		bulletColor = Color::Red;
 	}else if(color == "yellow"){
-		bulletShape.setFillColor(Color::Yellow);
+		bulletColor = Color::Yellow;
 	}
+	bulletShape.setFillColor(bulletColor);
+
 
 
 	float xd = targetXY.x - shooterXY.x;
@@ -108,7 +110,7 @@ RectangleShape Bullet::getShape() {
 	return bulletShape;
 }
 
-void Bullet::update() {
+void Bullet::update(VertexArray &vertices) {
 	bulletShape.setOrigin(bulletShape.getSize().x/2,bulletShape.getSize().y/2);
 	transform = Transform();
 	if(active){
@@ -129,13 +131,23 @@ void Bullet::update() {
 
 
 	bulletShape.setPosition(position);
-	if(!broken){
-		if(active){
-			window->draw(bulletShape);
-		}else{
-			window->draw(bulletShape, transform);
-		}
+
+	VertexArray quad(Quads, 4);
+
+	for(int i = 0; i < 4; i++){
+		Vector2f xy = transform.transformPoint(bulletShape.getPoint(i));
+		xy.x += position.x;
+		xy.y += position.y;
+		vertices.append(Vertex(xy, bulletColor));
 	}
+
+	/* if(!broken){
+		if(active){
+			window->draw(quad);
+		}else{
+			window->draw(quad);
+		}
+	} */
 
 }
 
@@ -155,6 +167,7 @@ void Bullet::hitEnemy(){
 	health -= 2;
 	if(health <= 0){
 		broken = true;
+		movingSpeed = 1000000;
 	}
 }
 
@@ -173,3 +186,5 @@ void Bullet::start(Vector2f targetXYIn, int size_x , int size_y, int power){
 	xMove = xd * rate;
 	yMove = yd * rate;
 }
+
+

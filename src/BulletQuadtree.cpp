@@ -15,21 +15,18 @@ BulletQuadtree::BulletQuadtree(float _x, float _y, float _width, float _height, 
 	shape.setPosition(x, y);
 	shape.setSize(sf::Vector2f(width, height));
 
-	if (level == maxLevel) {
+    if (level == maxLevel) {
 		return;
 	}
 
-	NW = new BulletQuadtree(x, y, width / 2.0f, height / 2.0f, level+1, maxLevel);
-	NE = new BulletQuadtree(x + width / 2.0f, y, width / 2.0f, height / 2.0f, level+1, maxLevel);
-	SW = new BulletQuadtree(x, y + height / 2.0f, width / 2.0f, height / 2.0f, level+1, maxLevel);
-	SE = new BulletQuadtree(x + width / 2.0f, y + height / 2.0f, width / 2.0f, height / 2.0f, level+1, maxLevel);
+	NW = nullptr;
+	NE = nullptr;
+	SW = nullptr;
+	SE = nullptr;
 }
 
 BulletQuadtree::~BulletQuadtree()
 {
-	if (level == maxLevel)
-		return;
-
 	delete NW;
 	delete NE;
 	delete SW;
@@ -37,17 +34,23 @@ BulletQuadtree::~BulletQuadtree()
 }
 
 void BulletQuadtree::AddObject(Bullet * object){
-	if (level == maxLevel) {
-		objects.push_back(object);
-		return;
-	}
+
+    //no more division
+    if(shape.getSize().x <= 1 && shape.getSize().y <= 1){
+        objects.push_back(object);
+    }
+
 	if (contains(NW, object)) {
+        if(NW == nullptr) NW = new BulletQuadtree(x, y, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		NW->AddObject(object); return;
 	} else if (contains(NE, object)) {
+        if(NE == nullptr) NE = new BulletQuadtree(x + width / 2.0f, y, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		NE->AddObject(object); return;
 	} else if (contains(SW, object)) {
+        if(SW == nullptr) SW = new BulletQuadtree(x, y + height / 2.0f, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		SW->AddObject(object); return;
 	} else if (contains(SE, object)) {
+        if(SE == nullptr) SE = new BulletQuadtree(x + width / 2.0f, y + height / 2.0f, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		SE->AddObject(object); return;
 	}
 	if (contains(this, object)) {
@@ -56,40 +59,51 @@ void BulletQuadtree::AddObject(Bullet * object){
 }
 
 vector<Bullet *> BulletQuadtree::GetObjectsAt(float _x, float _y){
-	if (level == maxLevel) {
-		return objects;
-	}
+    /* cout << "LET's SEE " << this->level << " &" << this->maxLevel << endl;
+    if(level == maxLevel) std::cout << "OKEE\n"; */
+    if(level == maxLevel) return objects;
 
 	vector<Bullet *> returnObjects, childReturnObjects;
-	if (!objects.empty()) {
-		returnObjects = objects;
+	if (!this->objects.empty()) {
+        returnObjects = objects;
 	}
 	if (_x > x + width / 2.0f && _x < x + width) {
 		if (_y > y + height / 2.0f && _y < y + height) {
-			childReturnObjects = SE->GetObjectsAt(_x, _y);
-			returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+            if(SE != nullptr){
+                childReturnObjects = SE->GetObjectsAt(_x, _y);
+			    returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+            }
 			return returnObjects;
 		} else if (_y > y && _y <= y + height / 2.0f) {
-			childReturnObjects = NE->GetObjectsAt(_x, _y);
-			returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+            if(NE != nullptr){
+                childReturnObjects = NE->GetObjectsAt(_x, _y);
+			    returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+            }
+
 			return returnObjects;
 		}
 	} else if (_x > x && _x <= x + width / 2.0f) {
 		if (_y > y + height / 2.0f && _y < y + height) {
-			childReturnObjects = SW->GetObjectsAt(_x, _y);
-			returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+			if(SW != nullptr){
+                childReturnObjects = SW->GetObjectsAt(_x, _y);
+			    returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+            }
 			return returnObjects;
 		} else if (_y > y && _y <= y + height / 2.0f) {
-			childReturnObjects = NW->GetObjectsAt(_x, _y);
-			returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+			if(NW != nullptr){
+                childReturnObjects = NW->GetObjectsAt(_x, _y);
+			    returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
+            }
 			return returnObjects;
 		}
 	}
+    std::cout << "alright2\n";
 	return returnObjects;
 }
 
 bool BulletQuadtree::contains(BulletQuadtree * child ,Bullet *object) {
-	return child->getGlobalBounds().intersects(object->getGlobalBounds());
+	if(child == nullptr) return false;
+    return child->getGlobalBounds().intersects(object->getGlobalBounds());
 }
 
 FloatRect BulletQuadtree::getGlobalBounds(){
@@ -97,15 +111,10 @@ FloatRect BulletQuadtree::getGlobalBounds(){
 }
 
 void BulletQuadtree::clear() {
-	if (level == maxLevel) {
-		objects.clear();
-		return;
-	} else {
-		NW->clear();
-		NE->clear();
-		SW->clear();
-		SE->clear();
-	}
+    if(NW != nullptr) NW->clear();
+    if(NE != nullptr) NE->clear();
+    if(SW != nullptr) SW->clear();
+    if(SE != nullptr) SE->clear();
 	if (!objects.empty()) {
 		objects.clear();
 	}

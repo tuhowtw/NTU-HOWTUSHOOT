@@ -40,10 +40,11 @@ Enemy::Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *t
 	enemySprite.setOrigin(50,50);
 	enemySprite.setScale(0.3, 0.3);
 	enemySprite.setPosition(position);
-
+	toShow = true;
 }
 
 void Enemy::startAfterMiliSec(int milisec, Vector2f playerXY){
+	toShow = false;
 	startWaitTime = milisec;
 	toStartAfter = true;
 	bounceTargetXY = playerXY;
@@ -51,9 +52,11 @@ void Enemy::startAfterMiliSec(int milisec, Vector2f playerXY){
 
 void Enemy::startMoving(){
 	active = true;
+	toShow = true;
 }
 
 void Enemy::startMoving(Vector2f destXY){
+	toShow = true;
 	active = true;
 	destinationXY = destXY;
 	float xd = destinationXY.x - position.x;
@@ -95,7 +98,7 @@ void Enemy::shoot() {
 	Vector2f playerXY = player->getXY();
 	bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.6));
 	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 3, 3);
-	shootWaitTime = 500 /* + (std::rand()%20)*500 */;
+	shootWaitTime = 700 /* + (std::rand()%20)*500 */;
 }
 
 void Enemy::getHit(int damage){
@@ -228,5 +231,5 @@ void Enemy::update() {
 		enemySprite.setRotation(angle);
 	}
 	enemySprite.setPosition(position);
-	window->draw(enemySprite);
+	if(toShow) window->draw(enemySprite);
 }

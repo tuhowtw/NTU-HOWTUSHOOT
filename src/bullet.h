@@ -25,6 +25,7 @@ private:
 	int ySize;
 
 	Transform transform;
+	Color bulletColor;
 
 
 public:
@@ -33,9 +34,11 @@ public:
 	RectangleShape getShape();
 	FloatRect getGlobalBounds();
 	Vector2f getXY();
-	void update();
+	void update(VertexArray &vertices);
 	void hitEnemy();
 	bool isBroken();
+	VertexArray getVertexArray();
 	void setSize(int x, int y);
 	void start(Vector2f targetXYIn, int size_x = 10, int size_y = 10, int power = 1);
+	void getVertices();
 };

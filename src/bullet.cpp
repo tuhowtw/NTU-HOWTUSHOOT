@@ -155,7 +155,7 @@ FloatRect Bullet::getGlobalBounds() {
 }
 
 void Bullet::hitEnemy(){
-	health -= 2;
+	health -= 1;
 	if(health <= 0){
 		broken = true;
 		movingSpeed = 1000000;
@@ -176,6 +176,10 @@ void Bullet::start(Vector2f targetXYIn, int size_x , int size_y, int power){
 	rate = movingSpeed / pow(pow(xd, 2) + pow(yd, 2), 0.5);
 	xMove = xd * rate;
 	yMove = yd * rate;
+}
+
+void Bullet::setHealth(int h){
+	health = h;
 }
 
 

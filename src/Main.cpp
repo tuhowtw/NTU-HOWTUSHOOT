@@ -402,12 +402,13 @@ int main()
 
 						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 5 * playerBulletPower, 5 * playerBulletPower, angle));
 						//lastShotTime = std::clock();
-					}else if(std::chrono::steady_clock::now() - bulletPowerT > std::chrono::milliseconds(100)){
+					}else if(std::chrono::steady_clock::now() - bulletPowerT > std::chrono::milliseconds(5)){
 						bulletPowerT = std::chrono::steady_clock::now();
-						if(playerBulletPower < 10){
+						if(playerBulletPower < 50){
 							playerBulletPower += 1;
 						}
 						playerBulletHolder[playerBulletHolder.size() - 1].setSize(3 * playerBulletPower, 3 * playerBulletPower);
+						playerBulletHolder[playerBulletHolder.size() - 1].setHealth(playerBulletPower * 2);
 					}
 
 					mouseLPressed = true;

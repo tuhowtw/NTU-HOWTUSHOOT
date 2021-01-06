@@ -31,7 +31,7 @@ private:
 
 
 	std::chrono::steady_clock::time_point lastTimeShot;
-	int shootWaitTime;
+	int shootWaitTime = 0;
 	std::chrono::steady_clock::time_point timeKilled;
 	bool hasShotFirst = false;
 	std::vector<Bullet> *bulletHolder;

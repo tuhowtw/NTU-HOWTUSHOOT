@@ -41,4 +41,5 @@ public:
 	void setSize(int x, int y);
 	void start(Vector2f targetXYIn, int size_x = 10, int size_y = 10, int power = 1);
 	void getVertices();
+	void setHealth(int h);
 };

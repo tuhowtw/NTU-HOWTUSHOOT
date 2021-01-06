@@ -34,7 +34,7 @@ public:
 	RectangleShape getShape();
 	FloatRect getGlobalBounds();
 	Vector2f getXY();
-	void update(VertexArray &vertices);
+	void update();
 	void hitEnemy();
 	bool isBroken();
 	VertexArray getVertexArray();

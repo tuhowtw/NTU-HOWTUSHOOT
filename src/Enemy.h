@@ -42,6 +42,8 @@ private:
 	bool toShow;
 	Vector2f bounceTargetXY;
 
+	bool useYellowB = false;
+
 
 public:
 	Enemy(Vector2f startXY, RenderWindow *inWin, Player *playerIn, Texture *texture, int healthIn, Texture *explosionTexture, std::vector<Bullet> *inBulletHolder, int mode = 0);
@@ -58,4 +60,5 @@ public:
 	void getHit(int damage);
 	bool isAlive();
 	bool isKilled();
+	void yellowBullet();
 };

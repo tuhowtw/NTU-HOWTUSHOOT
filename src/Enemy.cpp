@@ -94,11 +94,19 @@ Sprite * Enemy::getSprite() {
 //
 //}
 
+void Enemy::yellowBullet(){
+	useYellowB = true;
+}
+
 void Enemy::shoot() {
 	Vector2f playerXY = player->getXY();
-	bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.6));
-	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 3, 3);
-	shootWaitTime = 700 /* + (std::rand()%20)*500 */;
+	if(useYellowB){
+		bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "yellow", 10, 10, -1, 0.6));
+	}else{
+		bulletHolder->push_back(Bullet(&enemySprite, playerXY, window, "red", 10, 10, -1, 0.6));
+	}
+	(*bulletHolder)[bulletHolder->size()-1].start(player->getXY(), 5, 5);
+	shootWaitTime = 800 + (std::rand()%20)*500;
 }
 
 void Enemy::getHit(int damage){

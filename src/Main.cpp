@@ -23,6 +23,8 @@ using namespace sf;
 int main()
 {
 	//for controlling process
+	srand(time(NULL));
+
 	bool enemyWork = true;
 	bool playerWork = true;
 
@@ -147,6 +149,14 @@ int main()
 
 	Texture *enemyTexture = new Texture();
 	enemyTexture->loadFromFile("Textures/enemy.png");
+	Texture *enemyLineTexture = new Texture();
+	enemyLineTexture->loadFromFile("Textures/enemy2.png");
+	Texture *enemyTexture3 = new Texture();
+	enemyTexture3->loadFromFile("Textures/enemy3.png");
+	Texture *enemyTexture4 = new Texture();
+	enemyTexture4->loadFromFile("Textures/enemy4.png");
+	Texture *enemyTexture5 = new Texture();
+	enemyTexture5->loadFromFile("Textures/enemy5.png");
 	Texture *explosionTexture = new Texture();
 	explosionTexture->loadFromFile("Textures/explosion.png");
 
@@ -187,6 +197,14 @@ int main()
 	int count = 0;
 	bool spawnStart = false;
 	std::chrono::steady_clock::time_point lastCreatedTime;
+
+	//turret block
+	int turretI = 0, turretJ = 0, turretCnt = 0, blockWaitTime = 3000, blockLatency = 42;
+	int blockSize = 0, blockMode = 0;
+	bool turretStart = false;
+	Vector2f blockStartXY;
+	std::chrono::steady_clock::time_point lastBlockT, lastTurretT;
+
 
 	Vector2f enemyXY;
 	Vector2f enemyStartPoint;
@@ -242,7 +260,7 @@ int main()
 							if(j < 15){
 								enemyXY.x = enemyStartPoint.x + i * enemyInterval;
 								enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 3));
+								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture3, 1, explosionTexture, enemyBulletHolder, 2));
 								lastCreatedTime = std::chrono::steady_clock::now();
 								enemySound.play();
 								count++;
@@ -264,6 +282,55 @@ int main()
 			if(!enemyWork){
 				created = false;
 			}
+
+			if(created && !turretStart && std::chrono::steady_clock::now() - lastBlockT > std::chrono::milliseconds(blockWaitTime)){
+				lastBlockT = std::chrono::steady_clock::now();
+				blockWaitTime = 4000 + std::rand() % 1000;
+				cout << "BLOCK\n";
+				int rand = std::rand() % 2;
+				if(rand == 0) blockMode = 2;
+					else blockMode = 3;
+				turretStart = true;
+				blockStartXY.x = std::rand() % 1000 + window->getSize().x / 2 - 500;
+				blockStartXY.y = std::rand() % 1000 + window->getSize().y / 2 - 500;
+				blockSize = 5/* std::rand() % 2 + 3 */;
+				turretI = 0;
+				turretJ = 0;
+			}
+
+			if(turretStart){
+				if(std::chrono::steady_clock::now() - lastTurretT > std::chrono::milliseconds(5)){
+					if(turretI < blockSize){
+						if(turretJ < blockSize){
+							Vector2f xy;
+							xy.x = blockStartXY.x + turretI * enemyInterval;
+							xy.y = blockStartXY.y + turretJ * enemyInterval;
+							if(blockMode == 2){
+								enemyHolder.push_back(Enemy(xy, window, player, enemyTexture4, 1, explosionTexture, enemyBulletHolder, blockMode));
+							}else{
+								enemyHolder.push_back(Enemy(xy, window, player, enemyTexture5, 1, explosionTexture, enemyBulletHolder, blockMode));
+								enemyHolder[enemyHolder.size() - 1].yellowBullet();
+							}
+							enemyHolder[enemyHolder.size() - 1].startAfterMiliSec((blockLatency * turretCnt), player->getXY());
+							lastTurretT = std::chrono::steady_clock::now();
+							enemySound.play();
+							turretCnt++;
+							turretJ++;
+						}
+						if(turretJ == blockSize){
+							turretJ = 0;
+							turretI++;
+						}
+					}
+					if(turretCnt >= blockSize * blockSize){
+						turretStart = false;
+						turretCnt = 0;
+					}
+				}
+			}
+
+
+
 			//created = false;
 			//wait for 2 sec then enemies move
 			auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - enemyCreatedT);
@@ -285,7 +352,7 @@ int main()
 				int startLatency = 0;
 				for(int i = 0; i < 20; i++){
 					startLatency += 150;
-					enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture, 1, explosionTexture, enemyBulletHolder, 2));
+					enemyHolder.push_back(Enemy(enemyXY, window, player, enemyLineTexture, 1, explosionTexture, enemyBulletHolder, 2));
 					enemyHolder[enemyHolder.size() - 1].startAfterMiliSec(startLatency, playerXY);
 					// lineMembers[i] = &enemyHolder[enemyHolder.size() - 1];
 				}
@@ -333,7 +400,7 @@ int main()
 						float yd = mouseXY.y - playerXY_temp.y;
 						angle = -atan2(xd, yd) * 180 / PI;
 
-						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 3 * playerBulletPower, 3 * playerBulletPower, angle));
+						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 5 * playerBulletPower, 5 * playerBulletPower, angle));
 						//lastShotTime = std::clock();
 					}else if(std::chrono::steady_clock::now() - bulletPowerT > std::chrono::milliseconds(100)){
 						bulletPowerT = std::chrono::steady_clock::now();
@@ -473,6 +540,18 @@ int main()
 					}
 				}
 			}
+
+			for(int i = 0; i < static_cast<int>(playerShieldHolder.size()); ++i){
+				Vector2f _xy = playerShieldHolder[i].getXY();
+				vector<Bullet *> returnObjs = enemyBulletTree.GetObjectsAt(_xy.x, _xy.y);
+				for(int j = 0; j < static_cast<int>(returnObjs.size()); ++j){
+					if(playerShieldHolder[i].getGlobalBounds().intersects(returnObjs[j]->getGlobalBounds())){
+						returnObjs[j]->hitEnemy();
+						hitSound.play();
+					}
+				}
+			}
+
 			/* std::vector<Bullet>::iterator itB1 = playerBulletHolder.begin();
 			std::vector<Bullet>::iterator itB2 = enemyBulletHolder->begin();
 			while (itB1 != playerBulletHolder.end()){
@@ -574,17 +653,17 @@ int main()
 
 
 			//update bullets
-			VertexArray bulletVertices(Quads);
+			// VertexArray bulletVertices(Quads);
 			for (std::vector<Bullet>::iterator it = playerBulletHolder.begin(); it < playerBulletHolder.end(); it++){
-				it->update(bulletVertices);
+				it->update();
 			}
 
 			for (std::vector<Bullet>::iterator it = enemyBulletHolder->begin(); it < enemyBulletHolder->end(); it++){
-				it->update(bulletVertices);
+				it->update();
 			}
 
 			for (std::vector<Bullet>::iterator it = playerShieldHolder.begin(); it < playerShieldHolder.end(); it++){
-				it->update(bulletVertices);
+				it->update();
 			}
 
 			//update enemies
@@ -689,8 +768,8 @@ int main()
  */
 
 
-			window->draw(bulletVertices);
-			bulletVertices.clear();
+			// window->draw(bulletVertices);
+			// bulletVertices.clear();
 			window->draw(lifeCountTxt);
 			window->draw(pointTxt);
 			window->draw(shieldCountTxt);

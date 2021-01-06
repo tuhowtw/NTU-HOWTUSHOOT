@@ -110,7 +110,7 @@ RectangleShape Bullet::getShape() {
 	return bulletShape;
 }
 
-void Bullet::update(VertexArray &vertices) {
+void Bullet::update() {
 	bulletShape.setOrigin(bulletShape.getSize().x/2,bulletShape.getSize().y/2);
 	transform = Transform();
 	if(active){
@@ -132,22 +132,13 @@ void Bullet::update(VertexArray &vertices) {
 
 	bulletShape.setPosition(position);
 
-	VertexArray quad(Quads, 4);
-
-	for(int i = 0; i < 4; i++){
-		Vector2f xy = transform.transformPoint(bulletShape.getPoint(i));
-		xy.x += position.x;
-		xy.y += position.y;
-		vertices.append(Vertex(xy, bulletColor));
-	}
-
-	/* if(!broken){
+	if(!broken){
 		if(active){
-			window->draw(quad);
+			window->draw(bulletShape);
 		}else{
-			window->draw(quad);
+			window->draw(bulletShape, transform);
 		}
-	} */
+	}
 
 }
 

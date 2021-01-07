@@ -102,8 +102,8 @@ int main()
 	superShieldRechargeTimeTxt.setPosition(window->getSize().x-200,window->getSize().y-200 + 72);
 
 	//audio
-	SoundBuffer b1, b2, b3, b4, b5, b6, b7, b8;
-	Sound shootSound, hitSound, winSound, loseSound, shieldSound, hitShieldSound, startSound, enemySound;
+	SoundBuffer b1, b2, b3, b4, b5, b6, b7, b8, bounceBuffer;
+	Sound shootSound, hitSound, winSound, loseSound, shieldSound, hitShieldSound, startSound, enemySound, bounceSound;
 	b1.loadFromFile("Audio/shoot.wav");
 	shootSound.setBuffer(b1);
 	b2.loadFromFile("Audio/hit.wav");
@@ -120,6 +120,9 @@ int main()
 	startSound.setBuffer(b7);
 	b8.loadFromFile("Audio/start.wav");
 	enemySound.setBuffer(b8);
+	bounceBuffer.loadFromFile("Audio/bounce.wav");
+	bounceSound.setBuffer(bounceBuffer);
+	Bullet::setBounceSound(bounceSound);
 
 
 	bool resultSoundPlayed = false;
@@ -134,7 +137,7 @@ int main()
 	std::chrono::steady_clock::time_point lastShieldAddedT;
 	std::chrono::steady_clock::time_point lastShieldT;
 	std::chrono::steady_clock::time_point playerLastShootTime;
-	const int CHARGE_MODE = 0, MACHINE_GUN_MODE = 1;
+	const int CHARGE_MODE = 0, REMOTE_CHARGE_MODE = 1, MACHINE_GUN_MODE = 2;
 	int playerShootingMode = CHARGE_MODE;
 	int playerShootInterval = 10;
 
@@ -199,11 +202,13 @@ int main()
 	std::chrono::steady_clock::time_point lastCreatedTime;
 
 	//turret block
-	int turretI = 0, turretJ = 0, turretCnt = 0, blockWaitTime = 3000, blockLatency = 42;
+	int turretI = 0, turretJ = 0, turretCnt = 0, blockWaitTime = 5000, blockLatency = 42;
 	int blockSize = 0, blockMode = 0;
 	bool turretStart = false;
 	Vector2f blockStartXY;
 	std::chrono::steady_clock::time_point lastBlockT, lastTurretT;
+	int blockCnt = 0, lineCnt = 0;
+	int lineWaitTime = 5000;
 
 
 	Vector2f enemyXY;
@@ -285,8 +290,8 @@ int main()
 
 			if(created && !turretStart && std::chrono::steady_clock::now() - lastBlockT > std::chrono::milliseconds(blockWaitTime)){
 				lastBlockT = std::chrono::steady_clock::now();
-				blockWaitTime = 4000 + std::rand() % 1000;
-				cout << "BLOCK\n";
+				blockWaitTime = 5000 - blockCnt * 500;
+				if(blockWaitTime < 500) blockWaitTime = 500;
 				int rand = std::rand() % 2;
 				if(rand == 0) blockMode = 2;
 					else blockMode = 3;
@@ -296,6 +301,7 @@ int main()
 				blockSize = 5/* std::rand() % 2 + 3 */;
 				turretI = 0;
 				turretJ = 0;
+				blockCnt++;
 			}
 
 			if(turretStart){
@@ -343,8 +349,10 @@ int main()
 				}
 			}
 
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(5000 + std::rand()% 6 * 250)){
+			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(lineWaitTime)){
 				lastCreatedTime = std::chrono::steady_clock::now();
+				lineWaitTime = 5000 - lineCnt * 500;
+				if(lineWaitTime < 1500) lineWaitTime = 1500;
 				Vector2f enemyXY, playerXY;
 				enemyXY.x = std::rand()%window->getSize().x;
 				enemyXY.y = std::rand()%window->getSize().y;
@@ -357,6 +365,7 @@ int main()
 					// lineMembers[i] = &enemyHolder[enemyHolder.size() - 1];
 				}
 				enemySound.play();
+				lineCnt++;
 			}
 
 
@@ -382,12 +391,16 @@ int main()
 			}
 
 			if(Keyboard::isKeyPressed(Keyboard::Num2)){
+				playerShootingMode = REMOTE_CHARGE_MODE;
+			}
+
+			if(Keyboard::isKeyPressed(Keyboard::Num3)){
 				playerShootingMode = MACHINE_GUN_MODE;
 			}
 
 			//trigger
 			if (Mouse::isButtonPressed(Mouse::Left)) {
-				if(playerShootingMode == CHARGE_MODE){
+				if(playerShootingMode == CHARGE_MODE || playerShootingMode == REMOTE_CHARGE_MODE){
 					if(!mouseLPressed){
 						bulletPowerT = std::chrono::steady_clock::now();
 						float angle;
@@ -401,6 +414,7 @@ int main()
 						angle = -atan2(xd, yd) * 180 / PI;
 
 						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 5 * playerBulletPower, 5 * playerBulletPower, angle));
+						if(playerShootingMode == REMOTE_CHARGE_MODE) playerBulletHolder[playerBulletHolder.size() - 1].setRemoteCharge();
 						//lastShotTime = std::clock();
 					}else if(std::chrono::steady_clock::now() - bulletPowerT > std::chrono::milliseconds(5)){
 						bulletPowerT = std::chrono::steady_clock::now();

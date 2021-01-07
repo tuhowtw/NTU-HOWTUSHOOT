@@ -13,6 +13,11 @@ INCLUDE_DIRS := \
 BUILD_DEPENDENCIES := \
 	$(_SFML_BIN)/openal32.dll
 
+LINK_LIBRARIES := \
+	$(LINK_LIBRARIES) \
+	stdc++fs \
+	gdi32
+
 PRODUCTION_DEPENDENCIES := \
 	$(PRODUCTION_DEPENDENCIES) \
 	$(_MINGW)/libgcc_s_dw2-1.dll \

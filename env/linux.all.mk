@@ -1,4 +1,5 @@
 CC := g++
+CFLAGS := $(CFLAGS) -fpic
 
 LIB_DIRS := \
 	/usr/local/lib
@@ -12,6 +13,7 @@ BUILD_FLAGS := \
 
 LINK_LIBRARIES := \
 	$(LINK_LIBRARIES) \
+	stdc++fs \
 	X11
 
 PRODUCTION_LINUX_ICON := sfml

@@ -6,6 +6,8 @@
 
 using namespace sf;
 
+Sound Bullet::bounceSound;
+
 Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin, std::string color, int sizeX, int sizeY, float angle) {
 	window = inWin;
 	xSize = sizeX;
@@ -13,6 +15,9 @@ Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin
 	shooterSprite = shooterSpriteIn;
 	targetXY = targetXYIn;
 	health = 1;
+	bounceCnt = 0;
+	toBounce = false;
+	toRemoteCharge = false;
 
 	shooterXY = shooterSprite->getPosition();
 	movingSpeed = window->getSize().x / 800 * 2;
@@ -64,6 +69,9 @@ Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin
 	targetXY = targetXYIn;
 	speedUnit = speed;
 	health = 1;
+	bounceCnt = 0;
+	toBounce = false;
+	toRemoteCharge = false;
 
 	shooterXY = shooterSprite->getPosition();
 	movingSpeed = window->getSize().x / 800 * speedUnit;
@@ -113,20 +121,48 @@ RectangleShape Bullet::getShape() {
 void Bullet::update() {
 	bulletShape.setOrigin(bulletShape.getSize().x/2,bulletShape.getSize().y/2);
 	transform = Transform();
+
+
 	if(active){
 		position.x += xMove;
 		position.y += yMove;
 	}else{
-		float angle;
-		Vector2i mousePosition = Mouse::getPosition(*window);
-		position = shooterSprite->getPosition();
-		float xd = mousePosition.x - position.x;
-		float yd = mousePosition.y - position.y;
-		angle = -atan2(xd, yd) * 180 / PI;
-		Vector2f center = shooterSprite->getPosition();
-		transform.rotate(angle, center);
-		//rotated
+		if(!toRemoteCharge){
+			float angle;
+			Vector2i mousePosition = Mouse::getPosition(*window);
+			position = shooterSprite->getPosition();
+			float xd = mousePosition.x - position.x;
+			float yd = mousePosition.y - position.y;
+			angle = -atan2(xd, yd) * 180 / PI;
+			Vector2f center = shooterSprite->getPosition();
+			transform.rotate(angle, center);
+			//rotated
+		}
 
+	}
+	if(!broken && toBounce){
+		if(bounceCnt < 10){
+			if(position.x < 0 || position.x > window->getSize().x){
+				if(position.x < 0){
+					position.x = 1;
+				}else{
+					position.x = window->getSize().x - 1;
+				}
+				xMove *= -1;
+				bounceSound.play();
+				bounceCnt++;
+			}
+			if(position.y < 0 || position.y > window->getSize().y){
+				if(position.y < 0){
+					position.y = 1;
+				}else{
+					position.y = window->getSize().y - 1;
+				}
+				yMove *= -1;
+				bounceSound.play();
+				bounceCnt++;
+			}
+		}
 	}
 
 
@@ -155,7 +191,7 @@ FloatRect Bullet::getGlobalBounds() {
 }
 
 void Bullet::hitEnemy(){
-	health -= 1;
+	health -= 2;
 	if(health <= 0){
 		broken = true;
 		movingSpeed = 1000000;
@@ -180,6 +216,16 @@ void Bullet::start(Vector2f targetXYIn, int size_x , int size_y, int power){
 
 void Bullet::setHealth(int h){
 	health = h;
+	if(h > 90){
+		toBounce = true;
+	}
 }
 
+void Bullet::setRemoteCharge(){
+	toRemoteCharge = true;
+}
+
+void Bullet::setBounceSound(Sound s){
+	bounceSound = s;
+}
 

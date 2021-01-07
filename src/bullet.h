@@ -20,6 +20,10 @@ private:
 	bool broken = false;
 	bool active = false;
 	int health;
+	bool toBounce;
+	int bounceCnt;
+	bool toRemoteCharge;
+	static Sound bounceSound;
 
 	int xSize;
 	int ySize;
@@ -42,4 +46,7 @@ public:
 	void start(Vector2f targetXYIn, int size_x = 10, int size_y = 10, int power = 1);
 	void getVertices();
 	void setHealth(int h);
+	void setRemoteCharge();
+	static void setBounceSound(Sound s);
 };
+

@@ -3,4 +3,6 @@ LINK_LIBRARIES := \
 	sfml-audio-d \
 	sfml-network-d \
 	sfml-window-d \
-	sfml-system-d
+	sfml-system-d \
+	stdc++fs \
+	gdi32

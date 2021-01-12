@@ -20,8 +20,11 @@ using namespace sf;
 #define GAMEOVER 3
 #define PI 3.1415926
 
-int main()
-{
+const bool PLAYER_NOT_INVINCIBLE = 1, GRID_ON = 1, GRID_ACTIVE = 1, LINE_ON = 1, BLOCK_ON = 1;
+const bool BULLET_INVINCIBLE = 1, KEEP_GAME = 0;
+const int GRID_MODE = 2;
+
+int main(){
 	//for controlling process
 	srand(time(NULL));
 
@@ -210,12 +213,12 @@ int main()
 	int blockCnt = 0, lineCnt = 0;
 	int lineWaitTime = 5000;
 
+	int GRID_SIZE = 11;
+
 
 	Vector2f enemyXY;
 	Vector2f enemyStartPoint;
 	int enemyInterval = 40;
-	enemyStartPoint.x = window->getSize().x/2-2*enemyInterval;
-	enemyStartPoint.y = window->getSize().y/2-2*enemyInterval;
 	std::vector<Enemy> enemyHolder;
 	std::chrono::steady_clock::time_point lastSpawnT;
 /*
@@ -225,14 +228,16 @@ int main()
 	// int lineMemberStartLatency = 0;
 	std::chrono::steady_clock::time_point lastLineStartT;
 
-	while (window->isOpen())
-	{
+	while (window->isOpen()){
+		if(!created){
+			enemyStartPoint.x = window->getSize().x/2 - (GRID_SIZE / 2) * enemyInterval;
+			enemyStartPoint.y = window->getSize().y/2 - (GRID_SIZE / 2) * enemyInterval;
+		}
 		Event event;
 		while (window->pollEvent(event)) {
 			if (event.type == Event::Closed) window->close();
 		}
-		if (event.type == sf::Event::Resized)
-		{
+		if (event.type == sf::Event::Resized){
 			// update the view to the new size of the window
 			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 			window->setView(sf::View(visibleArea));
@@ -258,26 +263,26 @@ int main()
 			if (Keyboard::isKeyPressed(Keyboard::Q)) {
 				playerWork = !playerWork;
 			}
-			if(!created){
+			if(GRID_ON &&!created){
 				if(!spawnStart){
 					if(std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(5)){
-						if(i < 15){
-							if(j < 15){
+						if(i < GRID_SIZE){
+							if(j < GRID_SIZE){
 								enemyXY.x = enemyStartPoint.x + i * enemyInterval;
 								enemyXY.y = enemyStartPoint.y + j * enemyInterval;
-								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture3, 1, explosionTexture, enemyBulletHolder, 2));
+								enemyHolder.push_back(Enemy(enemyXY, window, player, enemyTexture3, 1, explosionTexture, enemyBulletHolder, GRID_MODE));
 								lastCreatedTime = std::chrono::steady_clock::now();
 								enemySound.play();
 								count++;
 								j++;
 							}
-							if(j == 15){
+							if(j == GRID_SIZE){
 								j = 0;
 								i++;
 							}
 						}
 					}
-					if(count >= 225){
+					if(count >= GRID_SIZE * GRID_SIZE){
 						created = true;
 						enemyCreatedT = std::chrono::steady_clock::now();
 					}
@@ -288,9 +293,11 @@ int main()
 				created = false;
 			}
 
-			if(created && !turretStart && std::chrono::steady_clock::now() - lastBlockT > std::chrono::milliseconds(blockWaitTime)){
+			if(!GRID_ON) created = true;
+
+			if(BLOCK_ON && created && !turretStart && std::chrono::steady_clock::now() - lastBlockT > std::chrono::milliseconds(blockWaitTime)){
 				lastBlockT = std::chrono::steady_clock::now();
-				blockWaitTime = 5000 - blockCnt * 500;
+				blockWaitTime = 2000 - blockCnt * 500;
 				if(blockWaitTime < 500) blockWaitTime = 500;
 				int rand = std::rand() % 2;
 				if(rand == 0) blockMode = 2;
@@ -298,13 +305,15 @@ int main()
 				turretStart = true;
 				blockStartXY.x = std::rand() % 1000 + window->getSize().x / 2 - 500;
 				blockStartXY.y = std::rand() % 1000 + window->getSize().y / 2 - 500;
-				blockSize = 5/* std::rand() % 2 + 3 */;
+				// blockStartXY.x = std::rand() % window->getSize().x;
+				// blockStartXY.y = std::rand() % window->getSize().y;
+				blockSize = std::rand() % 2 + 3;
 				turretI = 0;
 				turretJ = 0;
 				blockCnt++;
 			}
 
-			if(turretStart){
+			if(BLOCK_ON && turretStart){
 				if(std::chrono::steady_clock::now() - lastTurretT > std::chrono::milliseconds(5)){
 					if(turretI < blockSize){
 						if(turretJ < blockSize){
@@ -340,7 +349,7 @@ int main()
 			//created = false;
 			//wait for 2 sec then enemies move
 			auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - enemyCreatedT);
-			if(elapsed_seconds > std::chrono::seconds(0) && !enemyStarted && created){
+			if(GRID_ON && GRID_ACTIVE && elapsed_seconds > std::chrono::seconds(0) && !enemyStarted && created){
 				enemyStarted = true;
 				std::vector<Enemy>::iterator itStart = enemyHolder.begin();
 				while (itStart != enemyHolder.end()){
@@ -349,7 +358,7 @@ int main()
 				}
 			}
 
-			if(created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(lineWaitTime)){
+			if(LINE_ON && created && std::chrono::steady_clock::now() - lastCreatedTime > std::chrono::milliseconds(lineWaitTime)){
 				lastCreatedTime = std::chrono::steady_clock::now();
 				lineWaitTime = 5000 - lineCnt * 500;
 				if(lineWaitTime < 1500) lineWaitTime = 1500;
@@ -427,6 +436,7 @@ int main()
 
 					mouseLPressed = true;
 				}else if(playerShootingMode == MACHINE_GUN_MODE){
+					shootSound.setVolume(10);
 					Vector2f mouseXY;
 					Vector2i iMouseXY = Mouse::getPosition(*window);
 					mouseXY.x = iMouseXY.x;
@@ -434,6 +444,7 @@ int main()
 					if(std::chrono::steady_clock::now() - playerLastShootTime > std::chrono::milliseconds(playerShootInterval)){
 						playerBulletHolder.push_back(Bullet(player->getSprite(), mouseXY, window, "white", 3 * playerBulletPower, 3 * playerBulletPower, -1));
 						playerBulletHolder[playerBulletHolder.size()-1].start(mouseXY, 3 * playerBulletPower, 3 * playerBulletPower, playerBulletPower);
+						shootSound.play();
 						playerLastShootTime = std::chrono::steady_clock::now();
 					}
 				}
@@ -481,8 +492,8 @@ int main()
 					mouseXY.x = iMouseXY.x;
 					mouseXY.y = iMouseXY.y;
 					playerBulletHolder[playerBulletHolder.size()-1].start(mouseXY, 3 * playerBulletPower, 3 * playerBulletPower, playerBulletPower);
+					shootSound.setVolume(100);
 					shootSound.play();
-
 				}
 				mouseLPressed = false;
 				playerBulletPower = 1;
@@ -527,7 +538,7 @@ int main()
 					while (itEnemies != enemyHolder.end()) {
 						if (itBullet->getGlobalBounds().intersects(itEnemies->getGlobalBounds())) {
 							if(itEnemies->isKilled() == false && created){
-								itBullet->hitEnemy();
+								if(!BULLET_INVINCIBLE) itBullet->hitEnemy();
 								playerPoint++;
 								itEnemies->getHit(1);
 								hitSound.play();
@@ -611,7 +622,7 @@ int main()
 						if(std::chrono::steady_clock::now() - playerLastHitTime > std::chrono::milliseconds(1500)){
 							playerLastHitTime = std::chrono::steady_clock::now();
 							returnObjs2[i]->hitEnemy();
-							player->getHit(1);
+							if(PLAYER_NOT_INVINCIBLE) player->getHit(1);
 							hitSound.play();
 						}
 					}
@@ -635,9 +646,11 @@ int main()
 			std::vector<Enemy>::iterator itEnemy = enemyHolder.begin();
 			while(enemyStarted && player->isShieldOn() == false && itEnemy != enemyHolder.end()){
 				if(itEnemy->getGlobalBounds().intersects(player->getGlobalBounds())){
-					itEnemy->getHit(1);
-					player->getHit(1);
-					hitSound.play();
+					if(PLAYER_NOT_INVINCIBLE){
+						itEnemy->getHit(1);
+						player->getHit(1);
+						hitSound.play();
+					}
 				}
 				itEnemy++;
 			}
@@ -694,7 +707,7 @@ int main()
 				}
 			}
 
-			if(created && enemyHolder.size() <= 0){
+			if(!KEEP_GAME && created && enemyHolder.size() <= 0){
 				win = true;
 				GAMESTATE = GAMEOVER;
 			}

@@ -19,40 +19,40 @@ BulletQuadtree::BulletQuadtree(float _x, float _y, float _width, float _height, 
 		return;
 	}
 
-	NW = nullptr;
-	NE = nullptr;
-	SW = nullptr;
-	SE = nullptr;
+	NW = new BulletQuadtree(x, y, width / 2.0f, height / 2.0f, level + 1, maxLevel);
+	NE = new BulletQuadtree(x + width / 2.0f, y, width / 2.0f, height / 2.0f, level + 1, maxLevel);
+	SW = new BulletQuadtree(x, y + height / 2.0f, width / 2.0f, height / 2.0f, level + 1, maxLevel);
+	SE = new BulletQuadtree(x + width / 2.0f, y + height / 2.0f, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 }
 
 BulletQuadtree::~BulletQuadtree()
 {
-	delete NW;
-	delete NE;
-	delete SW;
-	delete SE;
+	if(level != maxLevel){
+		delete NW;
+		delete NE;
+		delete SW;
+		delete SE;
+	}
 }
 
 void BulletQuadtree::AddObject(Bullet * object){
 
     //no more division
-    if(shape.getSize().x <= 1 && shape.getSize().y <= 1){
+    if(level == maxLevel){
         objects.push_back(object);
+		return;
     }
 
 	if (contains(NW, object)) {
-        if(NW == nullptr) NW = new BulletQuadtree(x, y, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		NW->AddObject(object); return;
 	} else if (contains(NE, object)) {
-        if(NE == nullptr) NE = new BulletQuadtree(x + width / 2.0f, y, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		NE->AddObject(object); return;
 	} else if (contains(SW, object)) {
-        if(SW == nullptr) SW = new BulletQuadtree(x, y + height / 2.0f, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		SW->AddObject(object); return;
 	} else if (contains(SE, object)) {
-        if(SE == nullptr) SE = new BulletQuadtree(x + width / 2.0f, y + height / 2.0f, width / 2.0f, height / 2.0f, level + 1, maxLevel);
 		SE->AddObject(object); return;
 	}
+
 	if (contains(this, object)) {
 		objects.push_back(object);
 	}
@@ -97,7 +97,6 @@ vector<Bullet *> BulletQuadtree::GetObjectsAt(float _x, float _y){
 			return returnObjects;
 		}
 	}
-    std::cout << "alright2\n";
 	return returnObjects;
 }
 
@@ -111,10 +110,13 @@ FloatRect BulletQuadtree::getGlobalBounds(){
 }
 
 void BulletQuadtree::clear() {
-    if(NW != nullptr) NW->clear();
-    if(NE != nullptr) NE->clear();
-    if(SW != nullptr) SW->clear();
-    if(SE != nullptr) SE->clear();
+	if(level != maxLevel){
+		NW->clear();
+    	NE->clear();
+    	SW->clear();
+    	SE->clear();
+	}
+
 	if (!objects.empty()) {
 		objects.clear();
 	}

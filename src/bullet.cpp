@@ -114,6 +114,7 @@ Bullet::Bullet(Sprite *shooterSpriteIn, Vector2f targetXYIn, RenderWindow *inWin
 }
 
 
+
 RectangleShape Bullet::getShape() {
 	return bulletShape;
 }

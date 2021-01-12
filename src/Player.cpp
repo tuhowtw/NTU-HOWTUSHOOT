@@ -47,19 +47,19 @@ Sprite * Player::getSprite() {
 }
 
 void Player::moveUp() {
-	position.y -= yVelocity;
+	if(position.y - yVelocity > 0) position.y -= yVelocity;
 }
 
 void Player::moveDown() {
-	position.y += yVelocity;
+	if(position.y + yVelocity < window->getSize().y) position.y += yVelocity;
 }
 
 void Player::moveLeft() {
-	position.x -= xVelocity;
+	if(position.x - xVelocity > 0) position.x -= xVelocity;
 }
 
 void Player::moveRight() {
-	position.x += xVelocity;
+	if(position.x + xVelocity < window->getSize().x) position.x += xVelocity;
 }
 
 bool Player::inBound() {

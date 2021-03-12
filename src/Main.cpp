@@ -230,8 +230,8 @@ int main(){
 
 	while (window->isOpen()){
 		if(!created){
-			enemyStartPoint.x = window->getSize().x/2 - (GRID_SIZE / 2) * enemyInterval;
-			enemyStartPoint.y = window->getSize().y/2 - (GRID_SIZE / 2) * enemyInterval;
+			enemyStartPoint.x = window->getSize().x / 2 - (GRID_SIZE / 2) * enemyInterval;
+			enemyStartPoint.y = window->getSize().y / 2 - (GRID_SIZE / 2) * enemyInterval;
 		}
 		Event event;
 		while (window->pollEvent(event)) {
